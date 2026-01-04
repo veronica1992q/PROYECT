@@ -1,0 +1,226 @@
+[33mcommit c92a8351df74c1e38d82ca670c81e3eeccf348b0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Sun Jan 4 11:18:31 2026 -0500
+
+    Eliminar miApp.zip y agregar a gitignore
+
+ .gitignore | Bin [31m283[m -> [32m305[m bytes
+ miApp.zip  | Bin [31m127881023[m -> [32m0[m bytes
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+
+[33mcommit 7b396e8cf3e1e8cb94181d2ce54ca7902774a2ae[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Sun Jan 4 11:00:36 2026 -0500
+
+    ta
+
+ miApp.zip | Bin [31m0[m -> [32m127881023[m bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+[33mcommit c90a5c14265cb649216968b65b5df1f52e116fa4[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Thu Dec 18 11:50:32 2025 -0500
+
+    No submodulo
+
+ miApp | 1 [31m-[m
+ 1 file changed, 1 deletion(-)
+
+[33mcommit 16215b7c85c5bc5168c86282a52ae78ee2086bd7[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Thu Dec 18 11:49:40 2025 -0500
+
+    Carpeta App
+
+ miApp | 1 [32m+[m
+ 1 file changed, 1 insertion(+)
+
+[33mcommit 761a152edaa89dd808da4f7bce0f505c78f3232f[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Thu Dec 18 11:49:04 2025 -0500
+
+    No submodulo
+
+ miApp | 1 [31m-[m
+ 1 file changed, 1 deletion(-)
+
+[33mcommit 5c5bd00a2b8cc621c5b8ac9408fe2941ca4f147a[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Thu Dec 18 11:22:31 2025 -0500
+
+    app
+
+ miApp | 1 [32m+[m
+ 1 file changed, 1 insertion(+)
+
+[33mcommit 68447d4a35eccfaf67150d356b1d986a79cc4953[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Thu Dec 18 11:18:28 2025 -0500
+
+    tare
+
+ Evento-backend/package-lock.json | 205 [32m++++++++++++++++++++++++++[m[31m-------------[m
+ Evento-backend/package.json      |  11 [32m++[m[31m-[m
+ 2 files changed, 148 insertions(+), 68 deletions(-)
+
+[33mcommit d5384aa62eebb331e49da5d6df6a0f9c832f8176[m
+Merge: e912bd6 27dcd5e
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Mon Dec 15 21:50:07 2025 -0500
+
+    Resolver conflicto en .gitattributes
+
+[33mcommit e912bd695664702a5b26fbe4f4679440d9d41e01[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Mon Dec 15 21:26:37 2025 -0500
+
+    Primer commit: backend y frontend miApp
+
+ .editorconfig                                      |   18 [32m+[m
+ .env.example                                       |   65 [32m+[m
+ .expo/README.md                                    |   15 [32m+[m
+ .expo/devices.json                                 |    3 [32m+[m
+ .expo/settings.json                                |    8 [32m+[m
+ .gitattributes                                     |   11 [32m+[m
+ .gitignore                                         |   24 [32m+[m
+ README.md                                          |   59 [32m+[m
+ app/Http/Controllers/Controller.php                |    8 [32m+[m
+ app/Models/User.php                                |   48 [32m+[m
+ app/Providers/AppServiceProvider.php               |   24 [32m+[m
+ artisan                                            |   18 [32m+[m
+ bootstrap/app.php                                  |   19 [32m+[m
+ bootstrap/cache/.gitignore                         |    2 [32m+[m
+ bootstrap/providers.php                            |    5 [32m+[m
+ composer.json                                      |   87 [32m+[m
+ composer.lock                                      | 8445 [32m++++++++++++++++++++[m
+ config/app.php                                     |  126 [32m+[m
+ config/auth.php                                    |  115 [32m+[m
+ config/cache.php                                   |  117 [32m+[m
+ config/database.php                                |  183 [32m+[m
+ config/filesystems.php                             |   80 [32m+[m
+ config/logging.php                                 |  132 [32m+[m
+ config/mail.php                                    |  118 [32m+[m
+ config/queue.php                                   |  129 [32m+[m
+ config/sanctum.php                                 |   84 [32m+[m
+ config/services.php                                |   38 [32m+[m
+ config/session.php                                 |  217 [32m+[m
+ database/.gitignore                                |    1 [32m+[m
+ database/factories/UserFactory.php                 |   44 [32m+[m
+ .../0001_01_01_000000_create_users_table.php       |   49 [32m+[m
+ .../0001_01_01_000001_create_cache_table.php       |   35 [32m+[m
+ .../0001_01_01_000002_create_jobs_table.php        |   57 [32m+[m
+ ..._234134_create_personal_access_tokens_table.php |   33 [32m+[m
+ database/seeders/DatabaseSeeder.php                |   25 [32m+[m
+ package-lock.json                                  | 1735 [32m++++[m
+ package.json                                       |   21 [32m+[m
+ phpunit.xml                                        |   35 [32m+[m
+ public/.htaccess                                   |   25 [32m+[m
+ public/favicon.ico                                 |    2 [32m+[m
+ public/index.php                                   |   20 [32m+[m
+ public/robots.txt                                  |    2 [32m+[m
+ resources/css/app.css                              |   11 [32m+[m
+ resources/js/app.js                                |    1 [32m+[m
+ resources/js/bootstrap.js                          |    4 [32m+[m
+ resources/views/welcome.blade.php                  |  277 [32m+[m
+ routes/api.php                                     |    8 [32m+[m
+ routes/console.php                                 |    8 [32m+[m
+ routes/web.php                                     |    7 [32m+[m
+ server.js                                          |  107 [32m+[m
+ storage/app/.gitignore                             |    4 [32m+[m
+ storage/app/private/.gitignore                     |    2 [32m+[m
+ storage/app/public/.gitignore                      |    2 [32m+[m
+ storage/framework/.gitignore                       |    9 [32m+[m
+ storage/framework/cache/.gitignore                 |    3 [32m+[m
+ storage/framework/cache/data/.gitignore            |    2 [32m+[m
+ storage/framework/sessions/.gitignore              |    2 [32m+[m
+ storage/framework/testing/.gitignore               |    2 [32m+[m
+ storage/framework/views/.gitignore                 |    2 [32m+[m
+ storage/logs/.gitignore                            |    2 [32m+[m
+ tests/Feature/ExampleTest.php                      |   19 [32m+[m
+ tests/TestCase.php                                 |   10 [32m+[m
+ tests/Unit/ExampleTest.php                         |   16 [32m+[m
+ vite.config.js                                     |   18 [32m+[m
+ 64 files changed, 12798 insertions(+)
+
+[33mcommit 27dcd5e3b9498482e14bc2c4ac750fd280354b41[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Mon Dec 15 20:55:18 2025 -0500
+
+    TAREA
+
+ .expo/README.md                                    |   15 [32m+[m
+ .expo/settings.json                                |    8 [32m+[m
+ Evento-backend/.editorconfig                       |   18 [32m+[m
+ Evento-backend/.env.example                        |   65 [32m+[m
+ Evento-backend/.expo/README.md                     |   15 [32m+[m
+ Evento-backend/.expo/devices.json                  |    3 [32m+[m
+ Evento-backend/.expo/settings.json                 |    8 [32m+[m
+ Evento-backend/.gitattributes                      |   11 [32m+[m
+ Evento-backend/.gitignore                          |   24 [32m+[m
+ Evento-backend/README.md                           |   59 [32m+[m
+ Evento-backend/app/Http/Controllers/Controller.php |    8 [32m+[m
+ Evento-backend/app/Models/User.php                 |   48 [32m+[m
+ .../app/Providers/AppServiceProvider.php           |   24 [32m+[m
+ Evento-backend/artisan                             |   18 [32m+[m
+ Evento-backend/bootstrap/app.php                   |   19 [32m+[m
+ Evento-backend/bootstrap/cache/.gitignore          |    2 [32m+[m
+ Evento-backend/bootstrap/providers.php             |    5 [32m+[m
+ Evento-backend/composer.json                       |   87 [32m+[m
+ Evento-backend/composer.lock                       | 8445 [32m++++++++++++++++++++[m
+ Evento-backend/config/app.php                      |  126 [32m+[m
+ Evento-backend/config/auth.php                     |  115 [32m+[m
+ Evento-backend/config/cache.php                    |  117 [32m+[m
+ Evento-backend/config/database.php                 |  183 [32m+[m
+ Evento-backend/config/filesystems.php              |   80 [32m+[m
+ Evento-backend/config/logging.php                  |  132 [32m+[m
+ Evento-backend/config/mail.php                     |  118 [32m+[m
+ Evento-backend/config/queue.php                    |  129 [32m+[m
+ Evento-backend/config/sanctum.php                  |   84 [32m+[m
+ Evento-backend/config/services.php                 |   38 [32m+[m
+ Evento-backend/config/session.php                  |  217 [32m+[m
+ Evento-backend/database/.gitignore                 |    1 [32m+[m
+ Evento-backend/database/factories/UserFactory.php  |   44 [32m+[m
+ .../0001_01_01_000000_create_users_table.php       |   49 [32m+[m
+ .../0001_01_01_000001_create_cache_table.php       |   35 [32m+[m
+ .../0001_01_01_000002_create_jobs_table.php        |   57 [32m+[m
+ ..._234134_create_personal_access_tokens_table.php |   33 [32m+[m
+ Evento-backend/database/seeders/DatabaseSeeder.php |   25 [32m+[m
+ Evento-backend/package-lock.json                   | 1735 [32m++++[m
+ Evento-backend/package.json                        |   21 [32m+[m
+ Evento-backend/phpunit.xml                         |   35 [32m+[m
+ Evento-backend/public/.htaccess                    |   25 [32m+[m
+ Evento-backend/public/favicon.ico                  |    2 [32m+[m
+ Evento-backend/public/index.php                    |   20 [32m+[m
+ Evento-backend/public/robots.txt                   |    2 [32m+[m
+ Evento-backend/resources/css/app.css               |   11 [32m+[m
+ Evento-backend/resources/js/app.js                 |    1 [32m+[m
+ Evento-backend/resources/js/bootstrap.js           |    4 [32m+[m
+ Evento-backend/resources/views/welcome.blade.php   |  277 [32m+[m
+ Evento-backend/routes/api.php                      |    8 [32m+[m
+ Evento-backend/routes/console.php                  |    8 [32m+[m
+ Evento-backend/routes/web.php                      |    7 [32m+[m
+ Evento-backend/server.js                           |  107 [32m+[m
+ Evento-backend/storage/app/.gitignore              |    4 [32m+[m
+ Evento-backend/storage/app/private/.gitignore      |    2 [32m+[m
+ Evento-backend/storage/app/public/.gitignore       |    2 [32m+[m
+ Evento-backend/storage/framework/.gitignore        |    9 [32m+[m
+ Evento-backend/storage/framework/cache/.gitignore  |    3 [32m+[m
+ .../storage/framework/cache/data/.gitignore        |    2 [32m+[m
+ .../storage/framework/sessions/.gitignore          |    2 [32m+[m
+ .../storage/framework/testing/.gitignore           |    2 [32m+[m
+ Evento-backend/storage/framework/views/.gitignore  |    2 [32m+[m
+ Evento-backend/storage/logs/.gitignore             |    2 [32m+[m
+ Evento-backend/tests/Feature/ExampleTest.php       |   19 [32m+[m
+ Evento-backend/tests/TestCase.php                  |   10 [32m+[m
+ Evento-backend/tests/Unit/ExampleTest.php          |   16 [32m+[m
+ Evento-backend/vite.config.js                      |   18 [32m+[m
+ 66 files changed, 12821 insertions(+)
+
+[33mcommit 7b8b96b515e1bc3e759c8f99badf9cbb15062b24[m
+Author: veronica1992q <veronica-quiroz@hotmail.com>
+Date:   Mon Dec 15 20:42:28 2025 -0500
+
+    Initial commit
+
+ .gitattributes | 2 [32m++[m
+ 1 file changed, 2 insertions(+)
