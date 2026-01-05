@@ -1,19 +1,28 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import { TextInput, Button, Text, Card } from "react-native-paper";
+import { View, StyleSheet, ScrollView, Alert, Platform } from "react-native";
+import { TextInput, Button, Text, Card, Checkbox } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { API_URL } from "../config";
 
 export default function CreateEventScreen({ navigation }) {
-  const [birthday, setBirthday] = useState({ date: "", organizer: "", hall: "", extras: "" });
-  const [graduation, setGraduation] = useState({ date: "", organizer: "", hall: "", extras: "" });
+  const emptyEvent = {
+    date: "",
+    organizer: "",
+    hall: "",
+    extras: "",
+    services: [],
+    total: 0,
+  };
+
+  const [birthday, setBirthday] = useState({ ...emptyEvent });
+  const [graduation, setGraduation] = useState({ ...emptyEvent });
+  const [loading, setLoading] = useState(false);
 
   const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
 
-  // Organizadores ficticios (personas)
   const organizers = [
     "Miguel Andrade",
     "Sofía Herrera",
@@ -27,7 +36,6 @@ export default function CreateEventScreen({ navigation }) {
     "Paola Castillos",
   ];
 
-  // Salones ficticios
   const halls = [
     "Salón Crystal",
     "Salón Diamante",
@@ -41,215 +49,230 @@ export default function CreateEventScreen({ navigation }) {
     "Salón Amatista",
   ];
 
-  // Ofertas por tipo
+  const servicesPrices = {
+    "Decoración temática": 40,
+    "Pastel personalizado": 25,
+    "Animación infantil": 50,
+    "Fotografía": 30,
+    "Decoración elegante": 60,
+    "Catering completo": 120,
+    "DJ y música": 80,
+    "Fotografía profesional": 50,
+  };
+
   const offers = {
-    cumpleaños: ["Decoración temática", "Pastel personalizado", "Animación infantil", "Fotografía"],
-    graduacion: ["Decoración elegante", "Catering completo", "DJ y música", "Fotografía profesional"],
+    cumpleaños: [
+      "Decoración temática",
+      "Pastel personalizado",
+      "Animación infantil",
+      "Fotografía",
+    ],
+    graduacion: [
+      "Decoración elegante",
+      "Catering completo",
+      "DJ y música",
+      "Fotografía profesional",
+    ],
+  };
+
+  const calculateTotal = (services) =>
+    services.reduce((sum, s) => sum + servicesPrices[s], 0);
+
+  const toggleService = (type, service) => {
+    const state = type === "cumpleaños" ? birthday : graduation;
+    const setState = type === "cumpleaños" ? setBirthday : setGraduation;
+
+    const updated = state.services.includes(service)
+      ? state.services.filter((s) => s !== service)
+      : [...state.services, service];
+
+    setState({
+      ...state,
+      services: updated,
+      total: calculateTotal(updated),
+    });
   };
 
   const handleCreate = async (type, data) => {
     if (!data.date || !data.organizer || !data.hall) {
-      alert("Por favor completa fecha, organizador y salón");
+      alert("Completa fecha, organizador y salón");
       return;
     }
+
+    setLoading(true);
+
     try {
-      await axios.post(`${API_URL}/api/events`, {
-        presetTitle: type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
-        offers: offers[type],
-        ...data,
-      });
-      alert(`${type === "cumpleaños" ? "Cumpleaños" : "Graduación"} creado ✅`);
+       const formattedDate = data.date.includes("/")
+  ? data.date.split("/").reverse().join("-")
+  : data.date;
+
+await axios.post(`${API_URL}/api/events`, {
+  type,
+  date: formattedDate,
+  organizer: data.organizer,
+  hall: data.hall,
+  extras: data.extras,
+  services: data.services,
+  total: data.total,
+  status: "Pendiente",
+});
+
+
+      Alert.alert("Éxito", "Evento creado correctamente ✅");
       navigation.navigate("Events");
-    } catch (err) {
-      console.error("Error creando evento:", err.response?.data || err.message);
-      alert("No se pudo crear el evento");
+    } catch (error) {
+      alert("Error al crear evento");
+    } finally {
+      setLoading(false);
     }
   };
+
+  const renderBlock = (type, title, icon, state, setState, showPicker, setShowPicker) => (
+    <Card style={styles.card}>
+      <Card.Title title={`${icon} ${title}`} />
+      <Card.Content>
+        <Text style={styles.offersTitle}>Servicios:</Text>
+
+        {offers[type].map((service, i) => (
+          <View key={i} style={styles.serviceRow}>
+            <Checkbox
+              status={state.services.includes(service) ? "checked" : "unchecked"}
+              onPress={() => toggleService(type, service)}
+            />
+            <Text>
+              {service} (${servicesPrices[service]})
+            </Text>
+          </View>
+        ))}
+
+        <Text style={styles.label}>Fecha:</Text>
+
+{Platform.OS === "web" ? (
+  <input
+    type="date"
+    value={state.date}
+    onChange={(e) =>
+      setState({ ...state, date: e.target.value })
+    }
+    style={{
+      padding: 10,
+      fontSize: 16,
+      marginBottom: 10,
+    }}
+  />
+) : (
+  <>
+    <Button mode="outlined" onPress={() => setShowPicker(true)}>
+      {state.date || "Seleccionar fecha"}
+    </Button>
+
+    {showPicker && (
+      <DateTimePicker
+        value={state.date ? new Date(state.date) : new Date()}
+        mode="date"
+        minimumDate={new Date()}
+        onChange={(e, d) => {
+          setShowPicker(false);
+          if (d) {
+            setState({
+              ...state,
+              date: d.toISOString().split("T")[0],
+            });
+          }
+        }}
+      />
+    )}
+  </>
+)}
+
+        <Text style={styles.label}>Organizador:</Text>
+        <Picker
+          selectedValue={state.organizer}
+          onValueChange={(v) => setState({ ...state, organizer: v })}
+        >
+          <Picker.Item label="Seleccionar" value="" />
+          {organizers.map((o, i) => (
+            <Picker.Item key={i} label={o} value={o} />
+          ))}
+        </Picker>
+
+        <Text style={styles.label}>Salón:</Text>
+        <Picker
+          selectedValue={state.hall}
+          onValueChange={(v) => setState({ ...state, hall: v })}
+        >
+          <Picker.Item label="Seleccionar" value="" />
+          {halls.map((h, i) => (
+            <Picker.Item key={i} label={h} value={h} />
+          ))}
+        </Picker>
+
+        <TextInput
+          label="Extras"
+          value={state.extras}
+          onChangeText={(v) => setState({ ...state, extras: v })}
+          mode="outlined"
+          multiline
+        />
+
+        <Text style={styles.total}>Total: ${state.total}</Text>
+
+        <Button
+          mode="contained"
+          loading={loading}
+          disabled={loading}
+          onPress={() => handleCreate(type, state)}
+        >
+          Crear {title}
+        </Button>
+      </Card.Content>
+    </Card>
+  );
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>✨ Crear Evento ✨</Text>
 
-      {/* Bloque Cumpleaños */}
-      <Card style={styles.card}>
-        <Card.Title title="🎂 Fiesta de Cumpleaños" />
-        <Card.Content>
-          <Text style={styles.offersTitle}>Lo que ofrecemos:</Text>
-          {offers.cumpleaños.map((item, i) => (
-            <Text key={i} style={styles.offerItem}>• {item}</Text>
-          ))}
+      {renderBlock(
+        "cumpleaños",
+        "Cumpleaños",
+        "🎂",
+        birthday,
+        setBirthday,
+        showBirthdayPicker,
+        setShowBirthdayPicker
+      )}
 
-          <Text style={styles.label}>Fecha:</Text>
-          <Button
-            mode="outlined"
-            onPress={() => setShowBirthdayPicker(true)}
-            style={styles.dateButton}
-          >
-            {birthday.date ? `📅 ${birthday.date}` : "Seleccionar fecha"}
-          </Button>
-          {showBirthdayPicker && (
-            <DateTimePicker
-              value={birthday.date ? new Date(birthday.date) : new Date()}
-              mode="date"
-              display="calendar"
-              minimumDate={new Date()}
-              onChange={(event, selectedDate) => {
-                setShowBirthdayPicker(false);
-                if (selectedDate) {
-                  const formatted = selectedDate.toISOString().split("T")[0];
-                  setBirthday({ ...birthday, date: formatted });
-                }
-              }}
-            />
-          )}
-
-          <Text style={styles.label}>Organizador:</Text>
-          <Picker
-            selectedValue={birthday.organizer}
-            onValueChange={(v) => setBirthday({ ...birthday, organizer: v })}
-            style={styles.picker}
-          >
-            <Picker.Item label="Selecciona un organizador" value="" />
-            {organizers.map((org, i) => (
-              <Picker.Item key={i} label={org} value={org} />
-            ))}
-          </Picker>
-
-          <Text style={styles.label}>Salón de eventos:</Text>
-          <Picker
-            selectedValue={birthday.hall}
-            onValueChange={(v) => setBirthday({ ...birthday, hall: v })}
-            style={styles.picker}
-          >
-            <Picker.Item label="Selecciona un salón" value="" />
-            {halls.map((h, i) => (
-              <Picker.Item key={i} label={h} value={h} />
-            ))}
-          </Picker>
-
-          <TextInput
-            label="Extras"
-            value={birthday.extras}
-            onChangeText={(v) => setBirthday({ ...birthday, extras: v })}
-            style={styles.input}
-            mode="outlined"
-            multiline
-          />
-
-          <Button
-            mode="contained"
-            style={styles.createButton}
-            onPress={() => handleCreate("cumpleaños", birthday)}
-          >
-            Crear Cumpleaños
-          </Button>
-        </Card.Content>
-      </Card>
-
-      {/* Bloque Graduación */}
-      <Card style={styles.card}>
-        <Card.Title title="🎓 Graduación" />
-        <Card.Content>
-          <Text style={styles.offersTitle}>Lo que ofrecemos:</Text>
-          {offers.graduacion.map((item, i) => (
-            <Text key={i} style={styles.offerItem}>• {item}</Text>
-          ))}
-
-          <Text style={styles.label}>Fecha:</Text>
-          <Button
-            mode="outlined"
-            onPress={() => setShowGraduationPicker(true)}
-            style={styles.dateButton}
-          >
-            {graduation.date ? `📅 ${graduation.date}` : "Seleccionar fecha"}
-          </Button>
-          {showGraduationPicker && (
-            <DateTimePicker
-              value={graduation.date ? new Date(graduation.date) : new Date()}
-              mode="date"
-              display="calendar"
-              minimumDate={new Date()}
-              onChange={(event, selectedDate) => {
-                setShowGraduationPicker(false);
-                if (selectedDate) {
-                  const formatted = selectedDate.toISOString().split("T")[0];
-                  setGraduation({ ...graduation, date: formatted });
-                }
-              }}
-            />
-          )}
-
-          <Text style={styles.label}>Organizador:</Text>
-          <Picker
-            selectedValue={graduation.organizer}
-            onValueChange={(v) => setGraduation({ ...graduation, organizer: v })}
-            style={styles.picker}
-          >
-            <Picker.Item label="Selecciona un organizador" value="" />
-            {organizers.map((org, i) => (
-              <Picker.Item key={i} label={org} value={org} />
-            ))}
-          </Picker>
-
-          <Text style={styles.label}>Salón de eventos:</Text>
-          <Picker
-            selectedValue={graduation.hall}
-            onValueChange={(v) => setGraduation({ ...graduation, hall: v })}
-            style={styles.picker}
-          >
-            <Picker.Item label="Selecciona un salón" value="" />
-            {halls.map((h, i) => (
-              <Picker.Item key={i} label={h} value={h} />
-            ))}
-          </Picker>
-
-          <TextInput
-            label="Extras"
-            value={graduation.extras}
-            onChangeText={(v) => setGraduation({ ...graduation, extras: v })}
-            style={styles.input}
-            mode="outlined"
-            multiline
-          />
-
-          <Button
-            mode="contained"
-            style={styles.createButton}
-            onPress={() => handleCreate("graduacion", graduation)}
-          >
-            Crear Graduación
-          </Button>
-        </Card.Content>
-      </Card>
+      {renderBlock(
+        "graduacion",
+        "Graduación",
+        "🎓",
+        graduation,
+        setGraduation,
+        showGraduationPicker,
+        setShowGraduationPicker
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 20 },
+  container: { flex: 1, padding: 20, backgroundColor: "#f9f9f9" },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
+    marginBottom: 20,
     color: "#1976d2",
   },
-  card: { marginBottom: 20, borderRadius: 10, backgroundColor: "#fff", elevation: 2 },
-  offersTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8, color: "#333" },
-  offerItem: { fontSize: 14, marginBottom: 4, color: "#555" },
-  label: { marginTop: 10, fontSize: 15, fontWeight: "bold", color: "#444" },
-  picker: { marginBottom: 15, backgroundColor: "#fff", borderRadius: 6 },
-  input: { marginBottom: 15 },
-  dateButton: {
-    marginBottom: 15,
-    borderColor: "#1976d2",
-  },
-  createButton: {
+  card: { marginBottom: 20 },
+  offersTitle: { fontWeight: "bold", marginBottom: 8 },
+  serviceRow: { flexDirection: "row", alignItems: "center" },
+  label: { marginTop: 10, fontWeight: "bold" },
+  total: {
     marginTop: 10,
-    alignSelf: "center",
-    backgroundColor: "#1976d2",
-    paddingHorizontal: 25,
-    paddingVertical: 6,
-    borderRadius: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
