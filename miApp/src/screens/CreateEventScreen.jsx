@@ -36,46 +36,44 @@ export default function CreateEventScreen({ navigation }) {
     { name: "Fotografía profesional", price: 50 },
   ];
 
-  // Calcular total
   const calculateTotal = (services, selected) =>
     selected.reduce((sum, s) => {
       const item = services.find((i) => i.name === s);
       return sum + (item?.price || 0);
     }, 0);
 
-  // Activar / desactivar servicios
   const toggleService = (setState, serviceName) => {
     setState((prev) => {
-      const exists = prev.services.includes(serviceName);
+      const already = prev.services.includes(serviceName);
       return {
         ...prev,
-        services: exists
+        services: already
           ? prev.services.filter((s) => s !== serviceName)
           : [...prev.services, serviceName],
       };
     });
   };
 
-  // Crear evento
   const handleCreate = async (type, data, services) => {
     if (!data.date || !data.organizer || !data.hall) {
-      alert("Completa fecha, organizador y salón");
+      alert("Por favor completa fecha, organizador y salón");
       return;
     }
 
     try {
       await axios.post(`${API_URL}/api/events`, {
-        presetTitle: type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
+        presetTitle:
+          type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
         offers: data.services,
         total: calculateTotal(services, data.services),
         ...data,
       });
 
-      alert("Evento creado correctamente ✅");
+      alert("Evento creado ✅");
       navigation?.navigate?.("Events");
-    } catch (error) {
-      console.error(error);
-      alert("Error al crear el evento");
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo crear el evento");
     }
   };
 
@@ -83,7 +81,7 @@ export default function CreateEventScreen({ navigation }) {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>✨ Crear Evento ✨</Text>
 
-      {/* 🎂 Cumpleaños */}
+      {/* Cumpleaños */}
       <Card style={styles.card}>
         <Card.Title title="🎂 Fiesta de Cumpleaños" />
         <Card.Content>
@@ -91,15 +89,21 @@ export default function CreateEventScreen({ navigation }) {
             <Checkbox.Item
               key={i}
               label={`${item.name} ($${item.price})`}
-              status={birthday.services.includes(item.name) ? "checked" : "unchecked"}
+              status={
+                birthday.services.includes(item.name)
+                  ? "checked"
+                  : "unchecked"
+              }
               onPress={() => toggleService(setBirthday, item.name)}
             />
           ))}
 
           <TextInput
-            label="Fecha (YYYY-MM-DD)"
+            label="Fecha"
             value={birthday.date}
-            onChangeText={(v) => setBirthday({ ...birthday, date: v })}
+            onChangeText={(v) =>
+              setBirthday((prev) => ({ ...prev, date: v }))
+            }
             mode="outlined"
             style={styles.input}
           />
@@ -107,7 +111,9 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Organizador"
             value={birthday.organizer}
-            onChangeText={(v) => setBirthday({ ...birthday, organizer: v })}
+            onChangeText={(v) =>
+              setBirthday((prev) => ({ ...prev, organizer: v }))
+            }
             mode="outlined"
             style={styles.input}
           />
@@ -115,7 +121,9 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Salón de eventos"
             value={birthday.hall}
-            onChangeText={(v) => setBirthday({ ...birthday, hall: v })}
+            onChangeText={(v) =>
+              setBirthday((prev) => ({ ...prev, hall: v }))
+            }
             mode="outlined"
             style={styles.input}
           />
@@ -123,7 +131,9 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Extras"
             value={birthday.extras}
-            onChangeText={(v) => setBirthday({ ...birthday, extras: v })}
+            onChangeText={(v) =>
+              setBirthday((prev) => ({ ...prev, extras: v }))
+            }
             mode="outlined"
             multiline
             style={styles.input}
@@ -135,15 +145,17 @@ export default function CreateEventScreen({ navigation }) {
 
           <Button
             mode="contained"
-            onPress={() => handleCreate("cumpleaños", birthday, birthdayServices)}
             style={styles.createButton}
+            onPress={() =>
+              handleCreate("cumpleaños", birthday, birthdayServices)
+            }
           >
             Crear Cumpleaños
           </Button>
         </Card.Content>
       </Card>
 
-      {/* 🎓 Graduación */}
+      {/* Graduación */}
       <Card style={styles.card}>
         <Card.Title title="🎓 Graduación" />
         <Card.Content>
@@ -151,15 +163,21 @@ export default function CreateEventScreen({ navigation }) {
             <Checkbox.Item
               key={i}
               label={`${item.name} ($${item.price})`}
-              status={graduation.services.includes(item.name) ? "checked" : "unchecked"}
+              status={
+                graduation.services.includes(item.name)
+                  ? "checked"
+                  : "unchecked"
+              }
               onPress={() => toggleService(setGraduation, item.name)}
             />
           ))}
 
           <TextInput
-            label="Fecha (YYYY-MM-DD)"
+            label="Fecha"
             value={graduation.date}
-            onChangeText={(v) => setGraduation({ ...graduation, date: v })}
+            onChangeText={(v) =>
+              setGraduation((prev) => ({ ...prev, date: v }))
+            }
             mode="outlined"
             style={styles.input}
           />
@@ -167,7 +185,9 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Organizador"
             value={graduation.organizer}
-            onChangeText={(v) => setGraduation({ ...graduation, organizer: v })}
+            onChangeText={(v) =>
+              setGraduation((prev) => ({ ...prev, organizer: v }))
+            }
             mode="outlined"
             style={styles.input}
           />
@@ -175,7 +195,9 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Salón de eventos"
             value={graduation.hall}
-            onChangeText={(v) => setGraduation({ ...graduation, hall: v })}
+            onChangeText={(v) =>
+              setGraduation((prev) => ({ ...prev, hall: v }))
+            }
             mode="outlined"
             style={styles.input}
           />
@@ -183,22 +205,27 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Extras"
             value={graduation.extras}
-            onChangeText={(v) => setGraduation({ ...graduation, extras: v })}
+            onChangeText={(v) =>
+              setGraduation((prev) => ({ ...prev, extras: v }))
+            }
             mode="outlined"
             multiline
             style={styles.input}
           />
 
           <Text style={styles.total}>
-            Total: ${calculateTotal(graduationServices, graduation.services)}
+            Total: ${calculateTotal(
+              graduationServices,
+              graduation.services
+            )}
           </Text>
 
           <Button
             mode="contained"
+            style={styles.createButton}
             onPress={() =>
               handleCreate("graduacion", graduation, graduationServices)
             }
-            style={styles.createButton}
           >
             Crear Graduación
           </Button>
@@ -213,8 +240,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
     marginBottom: 20,
+    textAlign: "center",
     color: "#1976d2",
   },
   card: {
