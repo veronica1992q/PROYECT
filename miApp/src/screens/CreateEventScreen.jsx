@@ -85,6 +85,8 @@ export default function CreateEventScreen({ navigation }) {
       <Card style={styles.card}>
         <Card.Title title="🎂 Fiesta de Cumpleaños" />
         <Card.Content>
+          <Text style={styles.sectionTitle}>Servicios disponibles</Text>
+
           {birthdayServices.map((item, i) => (
             <Checkbox.Item
               key={i}
@@ -159,6 +161,8 @@ export default function CreateEventScreen({ navigation }) {
       <Card style={styles.card}>
         <Card.Title title="🎓 Graduación" />
         <Card.Content>
+          <Text style={styles.sectionTitle}>Servicios disponibles</Text>
+
           {graduationServices.map((item, i) => (
             <Checkbox.Item
               key={i}
@@ -248,6 +252,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 10,
     backgroundColor: "#fff",
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 8,
+    color: "#333",
   },
   input: { marginBottom: 15 },
   total: {
@@ -259,7 +270,10 @@ const styles = StyleSheet.create({
   },
   createButton: {
     marginTop: 10,
+    alignSelf: "center",
     backgroundColor: "#1976d2",
+    paddingHorizontal: 25,
+    paddingVertical: 6,
     borderRadius: 8,
   },
 });
