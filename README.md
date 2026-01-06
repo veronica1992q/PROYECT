@@ -57,3 +57,9 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+---
+
+## miApp — Android (Windows)
+
+There is a short guide for running the mobile app on Android in `miApp/README.md` (emulators, `npm run run-android`, `npm run check-android`, and `npm run build-android`).

@@ -4,21 +4,21 @@
     "slug": "miApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/favicon.png",
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "platforms": ["ios", "android", "web"],
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "platforms": ["android", "web"],
+    "assetBundlePatterns": ["**/*"],
     "web": {
-  "favicon": "./assets/favicon.png",
-  "output": "single"
-}
-
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "android": {
+      "package": "com.anonymous.miApp"
+    }
   }
 }
 
