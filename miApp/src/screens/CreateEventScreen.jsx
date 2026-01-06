@@ -277,4 +277,4 @@ const styles = StyleSheet.create({
   previewTotal: { fontWeight: "700", color: "#1976d2" },
   previewImage: { height: 140, width: "100%", resizeMode: "cover" },
   createButton: { backgroundColor: "#1976d2" },
-});
+}); 
