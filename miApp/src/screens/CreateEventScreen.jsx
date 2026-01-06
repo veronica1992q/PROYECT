@@ -40,19 +40,39 @@ export default function CreateEventScreen({ navigation }) {
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
 
   // ================= DATA =================
-  const organizers = [
-    "Miguel Andrade",
-    "Sofía Herrera",
-    "Carlos Méndez",
-    "Valeria Torres",
-  ];
+  const organizers = {
+    cumpleaños: [
+      "Andrea López",
+      "Fernando Ruiz",
+      "Camila Paredes",
+      "Javier Molina",
+      "Lucía Romero",
+    ],
+    graduacion: [
+      "Daniel Álvarez",
+      "Mariana Soto",
+      "Ricardo Espinoza",
+      "Paola Benítez",
+      "Sebastián Cruz",
+    ],
+  };
 
-  const halls = [
-    "Salón Crystal",
-    "Salón Diamante",
-    "Salón Oro",
-    "Salón Plata",
-  ];
+  const halls = {
+    cumpleaños: [
+      "Salón Fantasía Kids",
+      "Salón Arcoíris",
+      "Salón Mundo Mágico",
+      "Salón Pequeños Sueños",
+      "Salón Happy Party",
+    ],
+    graduacion: [
+      "Salón Elegance",
+      "Salón Prestige",
+      "Salón Imperial",
+      "Salón Nova",
+      "Salón Gala Real",
+    ],
+  };
 
   const offers = {
     cumpleaños: [
@@ -179,10 +199,7 @@ export default function CreateEventScreen({ navigation }) {
 
         <Divider style={{ marginVertical: 10 }} />
 
-        <Button
-          mode="outlined"
-          onPress={() => setShowPicker(true)}
-        >
+        <Button mode="outlined" onPress={() => setShowPicker(true)}>
           {data.date || "📅 Seleccionar fecha"}
         </Button>
 
@@ -210,7 +227,7 @@ export default function CreateEventScreen({ navigation }) {
           }
         >
           <Picker.Item label="👤 Organizador" value="" />
-          {organizers.map((o, i) => (
+          {organizers[typeKey].map((o, i) => (
             <Picker.Item key={i} label={o} value={o} />
           ))}
         </Picker>
@@ -222,7 +239,7 @@ export default function CreateEventScreen({ navigation }) {
           }
         >
           <Picker.Item label="🏛 Salón" value="" />
-          {halls.map((h, i) => (
+          {halls[typeKey].map((h, i) => (
             <Picker.Item key={i} label={h} value={h} />
           ))}
         </Picker>
@@ -267,7 +284,6 @@ export default function CreateEventScreen({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      {/* HERO */}
       <Card style={styles.heroCard}>
         <Card.Content>
           <Text style={styles.heroTitle}>
@@ -316,7 +332,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f4f6f8",
   },
-
   heroCard: {
     backgroundColor: "#1976d2",
     borderRadius: 20,
@@ -335,7 +350,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 6,
   },
-
   eventCard: {
     marginBottom: 30,
     borderRadius: 18,
@@ -346,13 +360,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
   },
-
   serviceCard: {
     marginBottom: 6,
     backgroundColor: "#f9f9f9",
@@ -373,7 +385,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1976d2",
   },
-
   totalCard: {
     marginTop: 15,
     padding: 15,
@@ -395,7 +406,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1b5e20",
   },
-
   createButton: {
     marginTop: 15,
     borderRadius: 10,
