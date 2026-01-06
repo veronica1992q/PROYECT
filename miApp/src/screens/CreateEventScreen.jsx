@@ -28,7 +28,30 @@ export default function CreateEventScreen({ navigation }) {
   const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
 
-  // Organizadores ficticios (personas)
+  // Funciones para limpiar formularios
+  const resetBirthday = () => {
+    setBirthday({
+      date: "",
+      organizer: "",
+      hall: "",
+      extras: "",
+      guests: "",
+      budget: "",
+    });
+  };
+
+  const resetGraduation = () => {
+    setGraduation({
+      date: "",
+      organizer: "",
+      hall: "",
+      extras: "",
+      guests: "",
+      budget: "",
+    });
+  };
+
+  // Organizadores ficticios
   const organizers = [
     "Miguel Andrade",
     "Sofía Herrera",
@@ -191,6 +214,14 @@ export default function CreateEventScreen({ navigation }) {
           >
             Crear Cumpleaños
           </Button>
+
+          <Button
+            mode="outlined"
+            style={styles.resetButton}
+            onPress={resetBirthday}
+          >
+            Limpiar Cumpleaños
+          </Button>
         </Card.Content>
       </Card>
 
@@ -258,65 +289,3 @@ export default function CreateEventScreen({ navigation }) {
             label="Invitados"
             value={graduation.guests}
             onChangeText={(v) => setGraduation({ ...graduation, guests: v })}
-            style={styles.input}
-            mode="outlined"
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.label}>Presupuesto estimado:</Text>
-          <TextInput
-            label="Presupuesto"
-            value={graduation.budget}
-            onChangeText={(v) => setGraduation({ ...graduation, budget: v })}
-            style={styles.input}
-            mode="outlined"
-            keyboardType="numeric"
-          />
-
-          <TextInput
-            label="Extras"
-            value={graduation.extras}
-            onChangeText={(v) => setGraduation({ ...graduation, extras: v })}
-            style={styles.input}
-            mode="outlined"
-            multiline
-          />
-
-          <Button
-            mode="contained"
-            style={styles.createButton}
-            onPress={() => handleCreate("graduacion", graduation)}
-          >
-            Crear Graduación
-          </Button>
-        </Card.Content>
-      </Card>
-    </ScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 20 },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#1976d2",
-  },
-  card: { marginBottom: 20, borderRadius: 10, backgroundColor: "#fff", elevation: 2 },
-  offersTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8, color: "#333" },
-  offerItem: { fontSize: 14, marginBottom: 4, color: "#555" },
-  label: { marginTop: 10, fontSize: 15, fontWeight: "bold", color: "#444" },
-  picker: { marginBottom: 15, backgroundColor: "#fff", borderRadius: 6 },
-  input: { marginBottom: 15 },
-  dateButton: { marginBottom: 15, borderColor: "#1976d2" },
-  createButton: {
-    marginTop: 10,
-    alignSelf: "center",
-    backgroundColor: "#1976d2",
-    paddingHorizontal: 25,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-});  
