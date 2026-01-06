@@ -16,16 +16,17 @@ function LogoutScreen({ navigation }) {
 
   const handleLogout = () => {
     logout();
-    navigation.replace("Dashboard"); // vuelve al dashboard limpio
+
+    // 🔴 RESETEA TODA LA NAVEGACIÓN Y VA AL LOGIN
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
   };
 
   return (
     <View style={styles.container}>
-      <Button
-        mode="contained"
-        onPress={handleLogout}
-        style={styles.button}
-      >
+      <Button mode="contained" onPress={handleLogout} style={styles.button}>
         Cerrar Sesión
       </Button>
     </View>
@@ -43,6 +44,7 @@ export default function DashboardTabs() {
           else if (route.name === "CreateEvent") iconName = "event";
           else if (route.name === "Events") iconName = "list";
           else if (route.name === "Logout") iconName = "logout";
+
           return <MaterialIcons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: "#1976d2",
