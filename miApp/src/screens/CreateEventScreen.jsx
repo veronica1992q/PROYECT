@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -7,8 +7,23 @@ import axios from "axios";
 import { API_URL } from "../config";
 
 export default function CreateEventScreen({ navigation }) {
-  const [birthday, setBirthday] = useState({ date: "", organizer: "", hall: "", extras: "" });
-  const [graduation, setGraduation] = useState({ date: "", organizer: "", hall: "", extras: "" });
+  const [birthday, setBirthday] = useState({
+    date: "",
+    organizer: "",
+    hall: "",
+    extras: "",
+    guests: "",
+    budget: "",
+  });
+
+  const [graduation, setGraduation] = useState({
+    date: "",
+    organizer: "",
+    hall: "",
+    extras: "",
+    guests: "",
+    budget: "",
+  });
 
   const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
@@ -43,8 +58,18 @@ export default function CreateEventScreen({ navigation }) {
 
   // Ofertas por tipo
   const offers = {
-    cumpleaños: ["Decoración temática", "Pastel personalizado", "Animación infantil", "Fotografía"],
-    graduacion: ["Decoración elegante", "Catering completo", "DJ y música", "Fotografía profesional"],
+    cumpleaños: [
+      "Decoración temática",
+      "Pastel personalizado",
+      "Animación infantil",
+      "Fotografía",
+    ],
+    graduacion: [
+      "Decoración elegante",
+      "Catering completo",
+      "DJ y música",
+      "Fotografía profesional",
+    ],
   };
 
   const handleCreate = async (type, data) => {
@@ -54,8 +79,9 @@ export default function CreateEventScreen({ navigation }) {
     }
     try {
       await axios.post(`${API_URL}/api/events`, {
-        presetTitle: type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
-        offers: offers[type],
+        presetTitle:
+          type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
+        offers: offers[type] ?? [],
         ...data,
       });
       alert(`${type === "cumpleaños" ? "Cumpleaños" : "Graduación"} creado ✅`);
@@ -76,7 +102,9 @@ export default function CreateEventScreen({ navigation }) {
         <Card.Content>
           <Text style={styles.offersTitle}>Lo que ofrecemos:</Text>
           {offers.cumpleaños.map((item, i) => (
-            <Text key={i} style={styles.offerItem}>• {item}</Text>
+            <Text key={i} style={styles.offerItem}>
+              • {item}
+            </Text>
           ))}
 
           <Text style={styles.label}>Fecha:</Text>
@@ -127,6 +155,26 @@ export default function CreateEventScreen({ navigation }) {
             ))}
           </Picker>
 
+          <Text style={styles.label}>Número de invitados:</Text>
+          <TextInput
+            label="Invitados"
+            value={birthday.guests}
+            onChangeText={(v) => setBirthday({ ...birthday, guests: v })}
+            style={styles.input}
+            mode="outlined"
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Presupuesto estimado:</Text>
+          <TextInput
+            label="Presupuesto"
+            value={birthday.budget}
+            onChangeText={(v) => setBirthday({ ...birthday, budget: v })}
+            style={styles.input}
+            mode="outlined"
+            keyboardType="numeric"
+          />
+
           <TextInput
             label="Extras"
             value={birthday.extras}
@@ -152,7 +200,9 @@ export default function CreateEventScreen({ navigation }) {
         <Card.Content>
           <Text style={styles.offersTitle}>Lo que ofrecemos:</Text>
           {offers.graduacion.map((item, i) => (
-            <Text key={i} style={styles.offerItem}>• {item}</Text>
+            <Text key={i} style={styles.offerItem}>
+              • {item}
+            </Text>
           ))}
 
           <Text style={styles.label}>Fecha:</Text>
@@ -203,6 +253,26 @@ export default function CreateEventScreen({ navigation }) {
             ))}
           </Picker>
 
+          <Text style={styles.label}>Número de invitados:</Text>
+          <TextInput
+            label="Invitados"
+            value={graduation.guests}
+            onChangeText={(v) => setGraduation({ ...graduation, guests: v })}
+            style={styles.input}
+            mode="outlined"
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Presupuesto estimado:</Text>
+          <TextInput
+            label="Presupuesto"
+            value={graduation.budget}
+            onChangeText={(v) => setGraduation({ ...graduation, budget: v })}
+            style={styles.input}
+            mode="outlined"
+            keyboardType="numeric"
+          />
+
           <TextInput
             label="Extras"
             value={graduation.extras}
@@ -240,10 +310,7 @@ const styles = StyleSheet.create({
   label: { marginTop: 10, fontSize: 15, fontWeight: "bold", color: "#444" },
   picker: { marginBottom: 15, backgroundColor: "#fff", borderRadius: 6 },
   input: { marginBottom: 15 },
-  dateButton: {
-    marginBottom: 15,
-    borderColor: "#1976d2",
-  },
+  dateButton: { marginBottom: 15, borderColor: "#1976d2" },
   createButton: {
     marginTop: 10,
     alignSelf: "center",
