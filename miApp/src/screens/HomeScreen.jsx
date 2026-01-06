@@ -48,7 +48,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.sectionTitle}>Celebraciones principales</Text>
           <Text style={styles.item}>🎂 Cumpleaños</Text>
           <Text style={styles.item}>🎓 Graduaciones</Text>
-          <Text style={styles.item}>💍 Bodas</Text>
+         
         </Card.Content>
       </Card>
 

@@ -8,8 +8,6 @@ import {
   Checkbox,
   Divider,
 } from "react-native-paper";
-import { Picker } from "@react-native-picker/picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { API_URL } from "../config";
 
@@ -36,44 +34,7 @@ export default function CreateEventScreen({ navigation }) {
   const [birthdayServices, setBirthdayServices] = useState([]);
   const [graduationServices, setGraduationServices] = useState([]);
 
-  const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
-  const [showGraduationPicker, setShowGraduationPicker] = useState(false);
-
   // ================= DATA =================
-  const organizers = {
-    cumpleaños: [
-      "Andrea López",
-      "Fernando Ruiz",
-      "Camila Paredes",
-      "Javier Molina",
-      "Lucía Romero",
-    ],
-    graduacion: [
-      "Daniel Álvarez",
-      "Mariana Soto",
-      "Ricardo Espinoza",
-      "Paola Benítez",
-      "Sebastián Cruz",
-    ],
-  };
-
-  const halls = {
-    cumpleaños: [
-      "Salón Fantasía Kids",
-      "Salón Arcoíris",
-      "Salón Mundo Mágico",
-      "Salón Pequeños Sueños",
-      "Salón Happy Party",
-    ],
-    graduacion: [
-      "Salón Elegance",
-      "Salón Prestige",
-      "Salón Imperial",
-      "Salón Nova",
-      "Salón Gala Real",
-    ],
-  };
-
   const offers = {
     cumpleaños: [
       { name: "Decoración temática", price: 150 },
@@ -104,25 +65,14 @@ export default function CreateEventScreen({ navigation }) {
   const birthdayTotal = calcTotal(birthdayServices);
   const graduationTotal = calcTotal(graduationServices);
 
-  const birthdayGeneral =
-    birthdayTotal + Number(birthday.budget || 0);
-  const graduationGeneral =
-    graduationTotal + Number(graduation.budget || 0);
+  const birthdayGeneral = birthdayTotal + Number(birthday.budget || 0);
+  const graduationGeneral = graduationTotal + Number(graduation.budget || 0);
 
   const createEvent = async (type) => {
     const data = type === "Cumpleaños" ? birthday : graduation;
-    const services =
-      type === "Cumpleaños"
-        ? birthdayServices
-        : graduationServices;
-
-    const totalServices =
-      type === "Cumpleaños" ? birthdayTotal : graduationTotal;
-
-    const totalGeneral =
-      type === "Cumpleaños"
-        ? birthdayGeneral
-        : graduationGeneral;
+    const services = type === "Cumpleaños" ? birthdayServices : graduationServices;
+    const totalServices = type === "Cumpleaños" ? birthdayTotal : graduationTotal;
+    const totalGeneral = type === "Cumpleaños" ? birthdayGeneral : graduationGeneral;
 
     if (!data.date || !data.organizer || !data.hall) {
       alert("Completa fecha, organizador y salón");
@@ -132,8 +82,7 @@ export default function CreateEventScreen({ navigation }) {
     try {
       await axios.post(`${API_URL}/api/events`, {
         type,
-        presetTitle:
-          type === "Cumpleaños" ? "🎂 Cumpleaños" : "🎓 Graduación",
+        presetTitle: type === "Cumpleaños" ? "🎂 Cumpleaños" : "🎓 Graduación",
         ...data,
         services,
         totalServices,
@@ -156,8 +105,6 @@ export default function CreateEventScreen({ navigation }) {
     setData,
     services,
     setServices,
-    showPicker,
-    setShowPicker,
     subtotal,
     total
   ) => (
@@ -174,14 +121,8 @@ export default function CreateEventScreen({ navigation }) {
           <Card key={i} style={styles.serviceCard}>
             <Card.Content style={styles.serviceRow}>
               <Checkbox
-                status={
-                  services.includes(item)
-                    ? "checked"
-                    : "unchecked"
-                }
-                onPress={() =>
-                  toggleService(item, services, setServices)
-                }
+                status={services.includes(item) ? "checked" : "unchecked"}
+                onPress={() => toggleService(item, services, setServices)}
               />
               <Text style={styles.serviceText}>{item.name}</Text>
               <Text style={styles.servicePrice}>${item.price}</Text>
@@ -199,76 +140,43 @@ export default function CreateEventScreen({ navigation }) {
 
         <Divider style={{ marginVertical: 10 }} />
 
-        <Button mode="outlined" onPress={() => setShowPicker(true)}>
-          {data.date || "📅 Seleccionar fecha"}
-        </Button>
+        <TextInput
+          label="📅 Fecha (YYYY-MM-DD)"
+          value={data.date}
+          onChangeText={(v) => setData({ ...data, date: v })}
+        />
 
-        {showPicker && (
-          <DateTimePicker
-            value={data.date ? new Date(data.date) : new Date()}
-            mode="date"
-            minimumDate={new Date()}
-            onChange={(e, date) => {
-              setShowPicker(false);
-              if (date) {
-                setData({
-                  ...data,
-                  date: date.toISOString().split("T")[0],
-                });
-              }
-            }}
-          />
-        )}
+        <TextInput
+          label="👤 Organizador"
+          value={data.organizer}
+          onChangeText={(v) => setData({ ...data, organizer: v })}
+        />
 
-        <Picker
-          selectedValue={data.organizer}
-          onValueChange={(v) =>
-            setData({ ...data, organizer: v })
-          }
-        >
-          <Picker.Item label="👤 Organizador" value="" />
-          {organizers[typeKey].map((o, i) => (
-            <Picker.Item key={i} label={o} value={o} />
-          ))}
-        </Picker>
-
-        <Picker
-          selectedValue={data.hall}
-          onValueChange={(v) =>
-            setData({ ...data, hall: v })
-          }
-        >
-          <Picker.Item label="🏛 Salón" value="" />
-          {halls[typeKey].map((h, i) => (
-            <Picker.Item key={i} label={h} value={h} />
-          ))}
-        </Picker>
+        <TextInput
+          label="🏛 Salón"
+          value={data.hall}
+          onChangeText={(v) => setData({ ...data, hall: v })}
+        />
 
         <TextInput
           label="👥 Invitados"
           keyboardType="numeric"
           value={data.guests}
-          onChangeText={(v) =>
-            setData({ ...data, guests: v })
-          }
+          onChangeText={(v) => setData({ ...data, guests: v })}
         />
 
         <TextInput
           label="💰 Presupuesto"
           keyboardType="numeric"
           value={data.budget}
-          onChangeText={(v) =>
-            setData({ ...data, budget: v })
-          }
+          onChangeText={(v) => setData({ ...data, budget: v })}
         />
 
         <TextInput
           label="✨ Extras"
           multiline
           value={data.extras}
-          onChangeText={(v) =>
-            setData({ ...data, extras: v })
-          }
+          onChangeText={(v) => setData({ ...data, extras: v })}
         />
 
         <Button
@@ -286,12 +194,8 @@ export default function CreateEventScreen({ navigation }) {
     <ScrollView style={styles.container}>
       <Card style={styles.heroCard}>
         <Card.Content>
-          <Text style={styles.heroTitle}>
-            🎉 Crea tu Evento Ideal
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            Hazlo único, elegante e inolvidable
-          </Text>
+          <Text style={styles.heroTitle}>🎉 Crea tu Evento Ideal</Text>
+          <Text style={styles.heroSubtitle}>Hazlo único, elegante e inolvidable</Text>
         </Card.Content>
       </Card>
 
@@ -303,8 +207,6 @@ export default function CreateEventScreen({ navigation }) {
         setBirthday,
         birthdayServices,
         setBirthdayServices,
-        showBirthdayPicker,
-        setShowBirthdayPicker,
         birthdayTotal,
         birthdayGeneral
       )}
@@ -317,8 +219,6 @@ export default function CreateEventScreen({ navigation }) {
         setGraduation,
         graduationServices,
         setGraduationServices,
-        showGraduationPicker,
-        setShowGraduationPicker,
         graduationTotal,
         graduationGeneral
       )}
@@ -374,6 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 8,
   },
   serviceText: {
     flex: 1,
@@ -413,3 +314,4 @@ const styles = StyleSheet.create({
     backgroundColor: "#1976d2",
   },
 });
+
