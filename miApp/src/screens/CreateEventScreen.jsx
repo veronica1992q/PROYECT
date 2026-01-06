@@ -1,19 +1,32 @@
 import React, { useState } from "react";
 import { StyleSheet, ScrollView } from "react-native";
-import { TextInput, Button, Text, Card } from "react-native-paper";
+import { TextInput, Button, Text, Card, Checkbox } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { API_URL } from "../config";
 
 export default function CreateEventScreen({ navigation }) {
-  const [birthday, setBirthday] = useState({ date: "", organizer: "", hall: "", extras: "" });
-  const [graduation, setGraduation] = useState({ date: "", organizer: "", hall: "", extras: "" });
+  const [birthday, setBirthday] = useState({
+    date: "",
+    organizer: "",
+    hall: "",
+    extras: "",
+    services: [],
+  });
+
+  const [graduation, setGraduation] = useState({
+    date: "",
+    organizer: "",
+    hall: "",
+    extras: "",
+    services: [],
+  });
 
   const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
 
-  // Organizadores (5 por tipo)
+  // Organizadores (5 distintos por tipo)
   const birthdayOrganizers = [
     "Ana Morales",
     "Luis Pérez",
@@ -21,7 +34,6 @@ export default function CreateEventScreen({ navigation }) {
     "Fernando Ruiz",
     "Patricia León",
   ];
-
   const graduationOrganizers = [
     "Daniel Ortega",
     "Laura Sánchez",
@@ -30,7 +42,7 @@ export default function CreateEventScreen({ navigation }) {
     "Roberto Castillo",
   ];
 
-  // Salones (5 por tipo)
+  // Salones (5 distintos por tipo)
   const birthdayHalls = [
     "Salón Fiesta",
     "Salón Alegría",
@@ -38,7 +50,6 @@ export default function CreateEventScreen({ navigation }) {
     "Salón Diversión",
     "Salón Magia",
   ];
-
   const graduationHalls = [
     "Salón Gala",
     "Salón Éxito",
@@ -47,13 +58,40 @@ export default function CreateEventScreen({ navigation }) {
     "Salón Victoria",
   ];
 
-  // Ofertas por tipo
-  const offers = {
-    cumpleaños: ["Decoración temática", "Pastel personalizado", "Animación infantil", "Fotografía"],
-    graduacion: ["Decoración elegante", "Catering completo", "DJ y música", "Fotografía profesional"],
+  // Servicios con precios
+  const birthdayServices = [
+    { name: "Decoración temática", price: 40 },
+    { name: "Pastel personalizado", price: 25 },
+    { name: "Animación infantil", price: 50 },
+    { name: "Fotografía", price: 30 },
+  ];
+  const graduationServices = [
+    { name: "Decoración elegante", price: 60 },
+    { name: "Catering completo", price: 100 },
+    { name: "DJ y música", price: 80 },
+    { name: "Fotografía profesional", price: 50 },
+  ];
+
+  // Cálculo de total
+  const calculateTotal = (services, selected) =>
+    selected.reduce((sum, s) => {
+      const item = services.find((i) => i.name === s);
+      return sum + (item?.price || 0);
+    }, 0);
+
+  // Toggle servicio
+  const toggleService = (setState, serviceName) => {
+    setState((prev) => {
+      const already = prev.services.includes(serviceName);
+      const updated = already
+        ? prev.services.filter((s) => s !== serviceName)
+        : [...prev.services, serviceName];
+      return { ...prev, services: updated };
+    });
   };
 
-  const handleCreate = async (type, data) => {
+  // Crear evento
+  const handleCreate = async (type, data, services) => {
     if (!data.date || !data.organizer || !data.hall) {
       alert("Por favor completa fecha, organizador y salón");
       return;
@@ -61,11 +99,12 @@ export default function CreateEventScreen({ navigation }) {
     try {
       await axios.post(`${API_URL}/api/events`, {
         presetTitle: type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
-        offers: offers[type],
+        offers: data.services,
+        total: calculateTotal(services, data.services),
         ...data,
       });
       alert(`${type === "cumpleaños" ? "Cumpleaños" : "Graduación"} creado ✅`);
-      navigation.navigate("Events");
+      navigation?.navigate?.("Events");
     } catch (err) {
       console.error("Error creando evento:", err.response?.data || err.message);
       alert("No se pudo crear el evento");
@@ -76,16 +115,21 @@ export default function CreateEventScreen({ navigation }) {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>✨ Crear Evento ✨</Text>
 
-      {/* Bloque Cumpleaños */}
+      {/* Cumpleaños */}
       <Card style={styles.card}>
         <Card.Title title="🎂 Fiesta de Cumpleaños" />
         <Card.Content>
-          <Text style={styles.offersTitle}>Lo que ofrecemos:</Text>
-          {offers.cumpleaños.map((item, i) => (
-            <Text key={i} style={styles.offerItem}>• {item}</Text>
+          <Text style={styles.sectionTitle}>Servicios disponibles</Text>
+          {birthdayServices.map((item, i) => (
+            <Checkbox.Item
+              key={i}
+              label={`${item.name} ($${item.price})`}
+              status={birthday.services.includes(item.name) ? "checked" : "unchecked"}
+              onPress={() => toggleService(setBirthday, item.name)}
+            />
           ))}
 
-          <Text style={styles.label}>Fecha:</Text>
+          <Text style={styles.label}>Fecha</Text>
           <Button
             mode="outlined"
             onPress={() => setShowBirthdayPicker(true)}
@@ -103,16 +147,16 @@ export default function CreateEventScreen({ navigation }) {
                 setShowBirthdayPicker(false);
                 if (selectedDate) {
                   const formatted = selectedDate.toISOString().split("T")[0];
-                  setBirthday({ ...birthday, date: formatted });
+                  setBirthday((prev) => ({ ...prev, date: formatted }));
                 }
               }}
             />
           )}
 
-          <Text style={styles.label}>Organizador:</Text>
+          <Text style={styles.label}>Organizador</Text>
           <Picker
             selectedValue={birthday.organizer}
-            onValueChange={(v) => setBirthday({ ...birthday, organizer: v })}
+            onValueChange={(v) => setBirthday((prev) => ({ ...prev, organizer: v }))}
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un organizador" value="" />
@@ -121,10 +165,10 @@ export default function CreateEventScreen({ navigation }) {
             ))}
           </Picker>
 
-          <Text style={styles.label}>Salón de eventos:</Text>
+          <Text style={styles.label}>Salón de eventos</Text>
           <Picker
             selectedValue={birthday.hall}
-            onValueChange={(v) => setBirthday({ ...birthday, hall: v })}
+            onValueChange={(v) => setBirthday((prev) => ({ ...prev, hall: v }))}
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un salón" value="" />
@@ -136,32 +180,41 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Extras"
             value={birthday.extras}
-            onChangeText={(v) => setBirthday({ ...birthday, extras: v })}
+            onChangeText={(v) => setBirthday((prev) => ({ ...prev, extras: v }))}
             style={styles.input}
             mode="outlined"
             multiline
           />
 
+          <Text style={styles.total}>
+            Total: ${calculateTotal(birthdayServices, birthday.services)}
+          </Text>
+
           <Button
             mode="contained"
             style={styles.createButton}
-            onPress={() => handleCreate("cumpleaños", birthday)}
+            onPress={() => handleCreate("cumpleaños", birthday, birthdayServices)}
           >
             Crear Cumpleaños
           </Button>
         </Card.Content>
       </Card>
 
-      {/* Bloque Graduación */}
+      {/* Graduación */}
       <Card style={styles.card}>
         <Card.Title title="🎓 Graduación" />
         <Card.Content>
-          <Text style={styles.offersTitle}>Lo que ofrecemos:</Text>
-          {offers.graduacion.map((item, i) => (
-            <Text key={i} style={styles.offerItem}>• {item}</Text>
+          <Text style={styles.sectionTitle}>Servicios disponibles</Text>
+          {graduationServices.map((item, i) => (
+            <Checkbox.Item
+              key={i}
+              label={`${item.name} ($${item.price})`}
+              status={graduation.services.includes(item.name) ? "checked" : "unchecked"}
+              onPress={() => toggleService(setGraduation, item.name)}
+            />
           ))}
 
-          <Text style={styles.label}>Fecha:</Text>
+          <Text style={styles.label}>Fecha</Text>
           <Button
             mode="outlined"
             onPress={() => setShowGraduationPicker(true)}
@@ -179,16 +232,16 @@ export default function CreateEventScreen({ navigation }) {
                 setShowGraduationPicker(false);
                 if (selectedDate) {
                   const formatted = selectedDate.toISOString().split("T")[0];
-                  setGraduation({ ...graduation, date: formatted });
+                  setGraduation((prev) => ({ ...prev, date: formatted }));
                 }
               }}
             />
           )}
 
-          <Text style={styles.label}>Organizador:</Text>
+          <Text style={styles.label}>Organizador</Text>
           <Picker
             selectedValue={graduation.organizer}
-            onValueChange={(v) => setGraduation({ ...graduation, organizer: v })}
+            onValueChange={(v) => setGraduation((prev) => ({ ...prev, organizer: v }))}
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un organizador" value="" />
@@ -197,10 +250,10 @@ export default function CreateEventScreen({ navigation }) {
             ))}
           </Picker>
 
-          <Text style={styles.label}>Salón de eventos:</Text>
+          <Text style={styles.label}>Salón de eventos</Text>
           <Picker
             selectedValue={graduation.hall}
-            onValueChange={(v) => setGraduation({ ...graduation, hall: v })}
+            onValueChange={(v) => setGraduation((prev) => ({ ...prev, hall: v }))}
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un salón" value="" />
@@ -212,16 +265,20 @@ export default function CreateEventScreen({ navigation }) {
           <TextInput
             label="Extras"
             value={graduation.extras}
-            onChangeText={(v) => setGraduation({ ...graduation, extras: v })}
+            onChangeText={(v) => setGraduation((prev) => ({ ...prev, extras: v }))}
             style={styles.input}
             mode="outlined"
             multiline
           />
 
+          <Text style={styles.total}>
+            Total: ${calculateTotal(graduationServices, graduation.services)}
+          </Text>
+
           <Button
             mode="contained"
             style={styles.createButton}
-            onPress={() => handleCreate("graduacion", graduation)}
+            onPress={() => handleCreate("graduacion", graduation, graduationServices)}
           >
             Crear Graduación
           </Button>
@@ -241,15 +298,12 @@ const styles = StyleSheet.create({
     color: "#1976d2",
   },
   card: { marginBottom: 20, borderRadius: 10, backgroundColor: "#fff", elevation: 2 },
-  offersTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8, color: "#333" },
-  offerItem: { fontSize: 14, marginBottom: 4, color: "#555" },
+  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8, color: "#333" },
   label: { marginTop: 10, fontSize: 15, fontWeight: "bold", color: "#444" },
   picker: { marginBottom: 15, backgroundColor: "#fff", borderRadius: 6 },
   input: { marginBottom: 15 },
-  dateButton: {
-    marginBottom: 15,
-    borderColor: "#1976d2",
-  },
+  dateButton: { marginBottom: 15, borderColor: "#1976d2" },
+  total: { fontSize: 16, fontWeight: "bold", textAlign: "center", marginVertical: 10, color: "#1976d2" },
   createButton: {
     marginTop: 10,
     alignSelf: "center",
