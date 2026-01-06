@@ -28,7 +28,30 @@ export default function CreateEventScreen({ navigation }) {
   const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
 
-  // Organizadores ficticios (personas)
+  // Funciones para limpiar formularios
+  const resetBirthday = () => {
+    setBirthday({
+      date: "",
+      organizer: "",
+      hall: "",
+      extras: "",
+      guests: "",
+      budget: "",
+    });
+  };
+
+  const resetGraduation = () => {
+    setGraduation({
+      date: "",
+      organizer: "",
+      hall: "",
+      extras: "",
+      guests: "",
+      budget: "",
+    });
+  };
+
+  // Organizadores ficticios
   const organizers = [
     "Miguel Andrade",
     "Sofía Herrera",
@@ -191,6 +214,14 @@ export default function CreateEventScreen({ navigation }) {
           >
             Crear Cumpleaños
           </Button>
+
+          <Button
+            mode="outlined"
+            style={styles.resetButton}
+            onPress={resetBirthday}
+          >
+            Limpiar Cumpleaños
+          </Button>
         </Card.Content>
       </Card>
 
@@ -232,7 +263,9 @@ export default function CreateEventScreen({ navigation }) {
           <Text style={styles.label}>Organizador:</Text>
           <Picker
             selectedValue={graduation.organizer}
-            onValueChange={(v) => setGraduation({ ...graduation, organizer: v })}
+            onValueChange={(v) =>
+              setGraduation({ ...graduation, organizer: v })
+            }
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un organizador" value="" />
@@ -289,6 +322,14 @@ export default function CreateEventScreen({ navigation }) {
           >
             Crear Graduación
           </Button>
+
+          <Button
+            mode="outlined"
+            style={styles.resetButton}
+            onPress={resetGraduation}
+          >
+            Limpiar Graduación
+          </Button>
         </Card.Content>
       </Card>
     </ScrollView>
@@ -304,7 +345,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#1976d2",
   },
-  card: { marginBottom: 20, borderRadius: 10, backgroundColor: "#fff", elevation: 2 },
+  card: {
+    marginBottom: 20,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    elevation: 2,
+  },
   offersTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8, color: "#333" },
   offerItem: { fontSize: 14, marginBottom: 4, color: "#555" },
   label: { marginTop: 10, fontSize: 15, fontWeight: "bold", color: "#444" },
@@ -319,4 +365,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
   },
-});  
+  resetButton: {
+    marginTop: 8,
+    alignSelf: "center",
+    borderColor: "#d32f2f",
+  },
+}); 
