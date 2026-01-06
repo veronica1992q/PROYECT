@@ -1,48 +1,79 @@
 import React, { useState } from "react";
-import { StyleSheet, ScrollView } from "react-native";
-import { TextInput, Button, Text, Card, Checkbox } from "react-native-paper";
+import {
+  StyleSheet,
+  ScrollView,
+  View,
+  Image,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import {
+  TextInput,
+  Button,
+  Text,
+  Card,
+  Chip,
+  Avatar,
+  Divider,
+  IconButton,
+} from "react-native-paper";
 import axios from "axios";
 import { API_URL } from "../config";
 
 export default function CreateEventScreen({ navigation }) {
-  const [birthday, setBirthday] = useState({
+  const defaultEvent = {
+    title: "",
     date: "",
+    time: "",
     organizer: "",
     hall: "",
+    address: "",
+    capacity: "",
+    pricePerPerson: "",
     extras: "",
     services: [],
-  });
+    theme: "",
+    imageUrl: "",
+    description: "",
+  };
 
-  const [graduation, setGraduation] = useState({
-    date: "",
-    organizer: "",
-    hall: "",
-    extras: "",
-    services: [],
-  });
+n  const [birthday, setBirthday] = useState({ ...defaultEvent });
+  const [graduation, setGraduation] = useState({ ...defaultEvent });
 
-  // Servicios con precios
-  const birthdayServices = [
+n  const birthdayServices = [
     { name: "Decoración temática", price: 40 },
     { name: "Pastel personalizado", price: 25 },
     { name: "Animación infantil", price: 50 },
     { name: "Fotografía", price: 30 },
   ];
 
-  const graduationServices = [
+n  const graduationServices = [
     { name: "Decoración elegante", price: 60 },
     { name: "Catering completo", price: 100 },
     { name: "DJ y música", price: 80 },
     { name: "Fotografía profesional", price: 50 },
   ];
 
-  const calculateTotal = (services, selected) =>
-    selected.reduce((sum, s) => {
+n  const themes = [
+    { key: "classic", label: "Clásico", color: "#ff7043" },
+    { key: "elegant", label: "Elegante", color: "#7b1fa2" },
+    { key: "fun", label: "Divertido", color: "#1976d2" },
+    { key: "nature", label: "Natural", color: "#388e3c" },
+  ];
+
+n  const formatCurrency = (n) => `$${Number(n || 0).toFixed(2)}`;
+
+n  const calculateTotal = (services, selected, capacity = 0, pricePerPerson = 0) => {
+    const servicesTotal = selected.reduce((sum, s) => {
       const item = services.find((i) => i.name === s);
       return sum + (item?.price || 0);
     }, 0);
+    const pax = Number(capacity) || 0;
+    const per = Number(pricePerPerson) || 0;
+    return servicesTotal + pax * per;
+  };
 
-  const toggleService = (setState, serviceName) => {
+n  const toggleService = (setState, serviceName) => {
     setState((prev) => {
       const already = prev.services.includes(serviceName);
       return {
@@ -54,22 +85,38 @@ export default function CreateEventScreen({ navigation }) {
     });
   };
 
-  const handleCreate = async (type, data, services) => {
-    if (!data.date || !data.organizer || !data.hall) {
-      alert("Por favor completa fecha, organizador y salón");
-      return;
+n  const validate = (data) => {
+    if (!data.title || !data.date || !data.time || !data.organizer) {
+      return "Completa título, fecha, hora y organizador";
     }
+    return null;
+  };
 
-    try {
+n  const handleCreate = async (type, data, services) => {
+    const err = validate(data);
+    if (err) return alert(err);
+
+n    try {
+      const total = calculateTotal(services, data.services, data.capacity, data.pricePerPerson);
       await axios.post(`${API_URL}/api/events`, {
-        presetTitle:
-          type === "cumpleaños" ? "🎂 Feliz Cumpleaños" : "🎓 Graduación",
-        offers: data.services,
-        total: calculateTotal(services, data.services),
-        ...data,
+        title: data.title,
+        type,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        organizer: data.organizer,
+        hall: data.hall,
+        address: data.address,
+        capacity: data.capacity,
+        pricePerPerson: data.pricePerPerson,
+        extras: data.extras,
+        services: data.services,
+        theme: data.theme,
+        imageUrl: data.imageUrl,
+        total,
       });
 
-      alert("Evento creado ✅");
+n      alert("Evento creado ✅");
       navigation?.navigate?.("Events");
     } catch (err) {
       console.error(err);
@@ -77,162 +124,136 @@ export default function CreateEventScreen({ navigation }) {
     }
   };
 
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>✨ Crear Evento ✨</Text>
-
-      {/* Cumpleaños */}
-      <Card style={styles.card}>
-        <Card.Title title="🎂 Fiesta de Cumpleaños" />
-        <Card.Content>
-          <Text style={styles.sectionTitle}>Servicios disponibles</Text>
-
-          {birthdayServices.map((item, i) => (
-            <Checkbox.Item
-              key={i}
-              label={`${item.name} ($${item.price})`}
-              status={
-                birthday.services.includes(item.name)
-                  ? "checked"
-                  : "unchecked"
-              }
-              onPress={() => toggleService(setBirthday, item.name)}
-            />
-          ))}
-
-          <TextInput
-            label="Fecha"
-            value={birthday.date}
-            onChangeText={(v) =>
-              setBirthday((prev) => ({ ...prev, date: v }))
-            }
+n  const ServiceChips = ({ items, state, setState }) => (
+    <View style={styles.chipsRow}>
+      {items.map((it) => {
+        const selected = state.services.includes(it.name);
+        return (
+          <Chip
+            key={it.name}
             mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Organizador"
-            value={birthday.organizer}
-            onChangeText={(v) =>
-              setBirthday((prev) => ({ ...prev, organizer: v }))
-            }
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Salón de eventos"
-            value={birthday.hall}
-            onChangeText={(v) =>
-              setBirthday((prev) => ({ ...prev, hall: v }))
-            }
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Extras"
-            value={birthday.extras}
-            onChangeText={(v) =>
-              setBirthday((prev) => ({ ...prev, extras: v }))
-            }
-            mode="outlined"
-            multiline
-            style={styles.input}
-          />
-
-          <Text style={styles.total}>
-            Total: ${calculateTotal(birthdayServices, birthday.services)}
-          </Text>
-
-          <Button
-            mode="contained"
-            style={styles.createButton}
-            onPress={() =>
-              handleCreate("cumpleaños", birthday, birthdayServices)
-            }
+            selected={selected}
+            onPress={() => toggleService(setState, it.name)}
+            style={[styles.chip, selected && { borderColor: "#1976d2" }]}
+            icon={selected ? "check" : "plus"}
           >
-            Crear Cumpleaños
-          </Button>
+            {it.name} ({formatCurrency(it.price)})
+          </Chip>
+        );
+      })}
+    </View>
+  );
+
+n  const ThemeSelector = ({ state, setState }) => (
+    <View style={styles.chipsRow}>
+      {themes.map((t) => (
+        <Chip
+          key={t.key}
+          selected={state.theme === t.key}
+          onPress={() => setState((p) => ({ ...p, theme: t.key }))}
+          style={[styles.themeChip, { borderColor: t.color }]}
+          icon={() => <Avatar.Text size={24} label={t.label[0]} />}
+        >
+          {t.label}
+        </Chip>
+      ))}
+    </View>
+  );
+
+n  const RenderPreview = ({ type, state, services }) => (
+    <Card style={styles.previewCard}>
+      <View style={styles.previewHeader}>
+        <Avatar.Icon size={48} icon={type === "cumpleaños" ? "cake" : "school"} />
+        <View style={{ marginLeft: 12, flex: 1 }}>
+          <Text style={styles.previewTitle}>{state.title || (type === "cumpleaños" ? "Cumpleaños" : "Graduación")}</Text>
+          <Text style={styles.previewSub}>{state.date} • {state.time} • {state.hall}</Text>
+        </View>
+        <Text style={styles.previewTotal}>{formatCurrency(calculateTotal(services, state.services, state.capacity, state.pricePerPerson))}</Text>
+      </View>
+      {state.imageUrl ? (
+        <Image source={{ uri: state.imageUrl }} style={styles.previewImage} />
+      ) : (
+        <Divider />
+      )}
+      <Card.Content>
+        <Text numberOfLines={3} style={{ marginBottom: 8 }}>{state.description || state.extras || "Sin descripción"}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Text style={{ color: "#666" }}>{state.capacity ? `${state.capacity} pax` : "Capacidad no definida"}</Text>
+          <Text style={{ color: "#666" }}>{state.theme ? `Tema: ${themes.find(t => t.key === state.theme)?.label}` : "Tema: -"}</Text>
+        </View>
+      </Card.Content>
+    </Card>
+  );
+
+n  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>✨ Crear Evento (más detallado) ✨</Text>
+
+n      {/* Cumpleaños */}
+      <Card style={styles.card}>
+        <Card.Title title="🎂 Fiesta de Cumpleaños" subtitle="Crea una celebración inolvidable" />
+        <Card.Content>
+          <TextInput label="Título" value={birthday.title} onChangeText={(v) => setBirthday((p) => ({ ...p, title: v }))} mode="outlined" style={styles.input} />
+          <View style={styles.row}>
+            <TextInput label="Fecha" value={birthday.date} onChangeText={(v) => setBirthday((p) => ({ ...p, date: v }))} mode="outlined" style={[styles.input, { flex: 1, marginRight: 8 }]} />
+            <TextInput label="Hora" value={birthday.time} onChangeText={(v) => setBirthday((p) => ({ ...p, time: v }))} mode="outlined" style={[styles.input, { flex: 1 }]} />
+          </View>
+          <TextInput label="Organizador" value={birthday.organizer} onChangeText={(v) => setBirthday((p) => ({ ...p, organizer: v }))} mode="outlined" style={styles.input} />
+          <TextInput label="Salón" value={birthday.hall} onChangeText={(v) => setBirthday((p) => ({ ...p, hall: v }))} mode="outlined" style={styles.input} />
+          <TextInput label="Dirección" value={birthday.address} onChangeText={(v) => setBirthday((p) => ({ ...p, address: v }))} mode="outlined" style={styles.input} />
+          <View style={styles.row}>
+            <TextInput label="Capacidad" value={String(birthday.capacity)} onChangeText={(v) => setBirthday((p) => ({ ...p, capacity: v }))} mode="outlined" style={[styles.input, { flex: 1, marginRight: 8 }]} keyboardType="numeric" />
+            <TextInput label="Precio por persona" value={String(birthday.pricePerPerson)} onChangeText={(v) => setBirthday((p) => ({ ...p, pricePerPerson: v }))} mode="outlined" style={[styles.input, { flex: 1 }]} keyboardType="numeric" />
+          </View>
+          <Text style={styles.sectionTitle}>Servicios</Text>
+          <ServiceChips items={birthdayServices} state={birthday} setState={setBirthday} />
+
+n          <Text style={styles.sectionTitle}>Tema</Text>
+          <ThemeSelector state={birthday} setState={setBirthday} />
+
+n          <TextInput label="Imagen (URL)" value={birthday.imageUrl} onChangeText={(v) => setBirthday((p) => ({ ...p, imageUrl: v }))} mode="outlined" style={styles.input} />
+          <TextInput label="Descripción" value={birthday.description} onChangeText={(v) => setBirthday((p) => ({ ...p, description: v }))} mode="outlined" multiline style={styles.input} />
+
+n          <RenderPreview type="cumpleaños" state={birthday} services={birthdayServices} />
+
+n          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12 }}>
+            <Button mode="outlined" onPress={() => setBirthday({ ...defaultEvent })}>Restablecer</Button>
+            <Button mode="contained" onPress={() => handleCreate("cumpleaños", birthday, birthdayServices)} style={styles.createButton}>Crear Cumpleaños</Button>
+          </View>
         </Card.Content>
       </Card>
 
-      {/* Graduación */}
+n      {/* Graduación */}
       <Card style={styles.card}>
-        <Card.Title title="🎓 Graduación" />
+        <Card.Title title="🎓 Graduación" subtitle="Celebra un gran logro con estilo" />
         <Card.Content>
-          <Text style={styles.sectionTitle}>Servicios disponibles</Text>
+          <TextInput label="Título" value={graduation.title} onChangeText={(v) => setGraduation((p) => ({ ...p, title: v }))} mode="outlined" style={styles.input} />
+          <View style={styles.row}>
+            <TextInput label="Fecha" value={graduation.date} onChangeText={(v) => setGraduation((p) => ({ ...p, date: v }))} mode="outlined" style={[styles.input, { flex: 1, marginRight: 8 }]} />
+            <TextInput label="Hora" value={graduation.time} onChangeText={(v) => setGraduation((p) => ({ ...p, time: v }))} mode="outlined" style={[styles.input, { flex: 1 }]} />
+          </View>
+          <TextInput label="Organizador" value={graduation.organizer} onChangeText={(v) => setGraduation((p) => ({ ...p, organizer: v }))} mode="outlined" style={styles.input} />
+          <TextInput label="Salón" value={graduation.hall} onChangeText={(v) => setGraduation((p) => ({ ...p, hall: v }))} mode="outlined" style={styles.input} />
+          <TextInput label="Dirección" value={graduation.address} onChangeText={(v) => setGraduation((p) => ({ ...p, address: v }))} mode="outlined" style={styles.input} />
+          <View style={styles.row}>
+            <TextInput label="Capacidad" value={String(graduation.capacity)} onChangeText={(v) => setGraduation((p) => ({ ...p, capacity: v }))} mode="outlined" style={[styles.input, { flex: 1, marginRight: 8 }]} keyboardType="numeric" />
+            <TextInput label="Precio por persona" value={String(graduation.pricePerPerson)} onChangeText={(v) => setGraduation((p) => ({ ...p, pricePerPerson: v }))} mode="outlined" style={[styles.input, { flex: 1 }]} keyboardType="numeric" />
+          </View>
+          <Text style={styles.sectionTitle}>Servicios</Text>
+          <ServiceChips items={graduationServices} state={graduation} setState={setGraduation} />
 
-          {graduationServices.map((item, i) => (
-            <Checkbox.Item
-              key={i}
-              label={`${item.name} ($${item.price})`}
-              status={
-                graduation.services.includes(item.name)
-                  ? "checked"
-                  : "unchecked"
-              }
-              onPress={() => toggleService(setGraduation, item.name)}
-            />
-          ))}
+n          <Text style={styles.sectionTitle}>Tema</Text>
+          <ThemeSelector state={graduation} setState={setGraduation} />
 
-          <TextInput
-            label="Fecha"
-            value={graduation.date}
-            onChangeText={(v) =>
-              setGraduation((prev) => ({ ...prev, date: v }))
-            }
-            mode="outlined"
-            style={styles.input}
-          />
+n          <TextInput label="Imagen (URL)" value={graduation.imageUrl} onChangeText={(v) => setGraduation((p) => ({ ...p, imageUrl: v }))} mode="outlined" style={styles.input} />
+          <TextInput label="Descripción" value={graduation.description} onChangeText={(v) => setGraduation((p) => ({ ...p, description: v }))} mode="outlined" multiline style={styles.input} />
 
-          <TextInput
-            label="Organizador"
-            value={graduation.organizer}
-            onChangeText={(v) =>
-              setGraduation((prev) => ({ ...prev, organizer: v }))
-            }
-            mode="outlined"
-            style={styles.input}
-          />
+n          <RenderPreview type="graduacion" state={graduation} services={graduationServices} />
 
-          <TextInput
-            label="Salón de eventos"
-            value={graduation.hall}
-            onChangeText={(v) =>
-              setGraduation((prev) => ({ ...prev, hall: v }))
-            }
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Extras"
-            value={graduation.extras}
-            onChangeText={(v) =>
-              setGraduation((prev) => ({ ...prev, extras: v }))
-            }
-            mode="outlined"
-            multiline
-            style={styles.input}
-          />
-
-          <Text style={styles.total}>
-            Total: ${calculateTotal(
-              graduationServices,
-              graduation.services
-            )}
-          </Text>
-
-          <Button
-            mode="contained"
-            style={styles.createButton}
-            onPress={() =>
-              handleCreate("graduacion", graduation, graduationServices)
-            }
-          >
-            Crear Graduación
-          </Button>
+n          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12 }}>
+            <Button mode="outlined" onPress={() => setGraduation({ ...defaultEvent })}>Restablecer</Button>
+            <Button mode="contained" onPress={() => handleCreate("graduacion", graduation, graduationServices)} style={styles.createButton}>Crear Graduación</Button>
+          </View>
         </Card.Content>
       </Card>
     </ScrollView>
@@ -240,40 +261,20 @@ export default function CreateEventScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", padding: 20 },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#1976d2",
-  },
-  card: {
-    marginBottom: 20,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: "#333",
-  },
-  input: { marginBottom: 15 },
-  total: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 10,
-    color: "#1976d2",
-  },
-  createButton: {
-    marginTop: 10,
-    alignSelf: "center",
-    backgroundColor: "#1976d2",
-    paddingHorizontal: 25,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
+  container: { flex: 1, backgroundColor: "#fbfbff", padding: 16 },
+  title: { fontSize: 22, fontWeight: "700", marginBottom: 14, textAlign: "center", color: "#3b3f72" },
+  card: { marginBottom: 18, borderRadius: 12, backgroundColor: "#fff", elevation: 3, paddingBottom: 6 },
+  sectionTitle: { fontSize: 15, fontWeight: "700", marginBottom: 8, color: "#222" },
+  input: { marginBottom: 12 },
+  row: { flexDirection: "row" },
+  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 },
+  chip: { marginRight: 8, marginBottom: 8 },
+  themeChip: { marginRight: 8, marginBottom: 8, borderWidth: 1 },
+  previewCard: { marginTop: 12, borderRadius: 10, overflow: "hidden" },
+  previewHeader: { flexDirection: "row", alignItems: "center", padding: 12 },
+  previewTitle: { fontSize: 16, fontWeight: "700" },
+  previewSub: { color: "#666", fontSize: 12 },
+  previewTotal: { fontWeight: "700", color: "#1976d2" },
+  previewImage: { height: 140, width: "100%", resizeMode: "cover" },
+  createButton: { backgroundColor: "#1976d2" },
 });
