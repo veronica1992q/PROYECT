@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { StyleSheet, ScrollView } from "react-native";
 import { TextInput, Button, Text, Card } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -13,32 +13,38 @@ export default function CreateEventScreen({ navigation }) {
   const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [showGraduationPicker, setShowGraduationPicker] = useState(false);
 
-  // Organizadores ficticios (personas)
-  const organizers = [
-    "Miguel Andrade",
-    "Sofía Herrera",
-    "Carlos Méndez",
-    "Valeria Torres",
-    "Javier Ríos",
-    "Camila Paredes",
-    "Andrés Guzmán",
-    "Mariana López",
-    "Diego Salazar",
-    "Paola Castillos",
+  // Organizadores (5 por tipo)
+  const birthdayOrganizers = [
+    "Ana Morales",
+    "Luis Pérez",
+    "Carla Gómez",
+    "Fernando Ruiz",
+    "Patricia León",
   ];
 
-  // Salones ficticios
-  const halls = [
-    "Salón Crystal",
-    "Salón Diamante",
-    "Salón Oro",
-    "Salón Plata",
-    "Salón Esmeralda",
-    "Salón Rubí",
-    "Salón Zafiro",
-    "Salón Topacio",
-    "Salón Jade",
-    "Salón Amatista",
+  const graduationOrganizers = [
+    "Daniel Ortega",
+    "Laura Sánchez",
+    "Martín Herrera",
+    "Claudia Jiménez",
+    "Roberto Castillo",
+  ];
+
+  // Salones (5 por tipo)
+  const birthdayHalls = [
+    "Salón Fiesta",
+    "Salón Alegría",
+    "Salón Infantil",
+    "Salón Diversión",
+    "Salón Magia",
+  ];
+
+  const graduationHalls = [
+    "Salón Gala",
+    "Salón Éxito",
+    "Salón Honor",
+    "Salón Triunfo",
+    "Salón Victoria",
   ];
 
   // Ofertas por tipo
@@ -91,7 +97,7 @@ export default function CreateEventScreen({ navigation }) {
             <DateTimePicker
               value={birthday.date ? new Date(birthday.date) : new Date()}
               mode="date"
-              display="calendar"
+              display="default"
               minimumDate={new Date()}
               onChange={(event, selectedDate) => {
                 setShowBirthdayPicker(false);
@@ -110,7 +116,7 @@ export default function CreateEventScreen({ navigation }) {
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un organizador" value="" />
-            {organizers.map((org, i) => (
+            {birthdayOrganizers.map((org, i) => (
               <Picker.Item key={i} label={org} value={org} />
             ))}
           </Picker>
@@ -122,7 +128,7 @@ export default function CreateEventScreen({ navigation }) {
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un salón" value="" />
-            {halls.map((h, i) => (
+            {birthdayHalls.map((h, i) => (
               <Picker.Item key={i} label={h} value={h} />
             ))}
           </Picker>
@@ -167,7 +173,7 @@ export default function CreateEventScreen({ navigation }) {
             <DateTimePicker
               value={graduation.date ? new Date(graduation.date) : new Date()}
               mode="date"
-              display="calendar"
+              display="default"
               minimumDate={new Date()}
               onChange={(event, selectedDate) => {
                 setShowGraduationPicker(false);
@@ -186,7 +192,7 @@ export default function CreateEventScreen({ navigation }) {
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un organizador" value="" />
-            {organizers.map((org, i) => (
+            {graduationOrganizers.map((org, i) => (
               <Picker.Item key={i} label={org} value={org} />
             ))}
           </Picker>
@@ -198,7 +204,7 @@ export default function CreateEventScreen({ navigation }) {
             style={styles.picker}
           >
             <Picker.Item label="Selecciona un salón" value="" />
-            {halls.map((h, i) => (
+            {graduationHalls.map((h, i) => (
               <Picker.Item key={i} label={h} value={h} />
             ))}
           </Picker>
