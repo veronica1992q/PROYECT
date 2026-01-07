@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, Button, Card, Avatar } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen() {
   const { user } = useAppContext();
 
   return (
@@ -23,32 +23,12 @@ export default function HomeScreen({ navigation }) {
         🎉 ¡Transforma tu fiesta en un evento inolvidable, {user?.name || "Invitado"}! 🎊
       </Text>
 
-      {/* Acciones rápidas */}
-      <View style={styles.quickActions}>
-        <Button
-          mode="contained"
-          style={styles.mainButton}
-          onPress={() => navigation.navigate("CreateEvent")}
-        >
-          ➕ Crear Evento
-        </Button>
-
-        <Button
-          mode="outlined"
-          style={styles.secondaryButton}
-          onPress={() => navigation.navigate("Events")}
-        >
-          📋 Ver Mis Eventos
-        </Button>
-      </View>
-
       {/* Tipos de eventos */}
       <Card style={styles.card}>
         <Card.Content>
           <Text style={styles.sectionTitle}>Celebraciones principales</Text>
           <Text style={styles.item}>🎂 Cumpleaños</Text>
           <Text style={styles.item}>🎓 Graduaciones</Text>
-         
         </Card.Content>
       </Card>
 
@@ -108,16 +88,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
     color: "#1976d2",
-  },
-  quickActions: {
-    marginBottom: 20,
-  },
-  mainButton: {
-    backgroundColor: "#1976d2",
-    marginBottom: 10,
-  },
-  secondaryButton: {
-    borderColor: "#1976d2",
   },
   card: {
     marginBottom: 15,
