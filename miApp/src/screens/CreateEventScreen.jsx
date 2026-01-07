@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet, ScrollView, View, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, ScrollView, View, Platform } from "react-native";
 import {
   TextInput,
   Button,
@@ -20,6 +20,8 @@ export default function CreateEventScreen({ navigation }) {
     guests: 0,
     budget: 0,
     extras: "",
+    selectedGuests: [],
+    budgetPreset: null,
   });
 
   const [graduation, setGraduation] = useState({
@@ -29,6 +31,8 @@ export default function CreateEventScreen({ navigation }) {
     guests: 0,
     budget: 0,
     extras: "",
+    selectedGuests: [],
+    budgetPreset: null,
   });
 
   const [birthdayServices, setBirthdayServices] = useState([]);
@@ -84,6 +88,51 @@ export default function CreateEventScreen({ navigation }) {
     ],
   };
 
+  // Opciones de invitados de ejemplo
+  const guestOptions = {
+    cumpleaños: [
+      "Ana García",
+      "Luis Paredes",
+      "María Gómez",
+      "Carlos Ruiz",
+      "Sofía Jiménez",
+    ],
+    graduacion: [
+      "Pedro Ortega",
+      "Lucía Mora",
+      "Diego Vargas",
+      "Fernanda Cruz",
+      "Javier León",
+    ],
+  };
+
+  const budgetPresets = [200, 500, 1000, 2000];
+
+  // UI state for guest pickers
+  const [showBirthdayGuestPicker, setShowBirthdayGuestPicker] = useState(false);
+  const [showGraduationGuestPicker, setShowGraduationGuestPicker] = useState(false);
+
+  // UI state for date pickers
+  const [showBirthdayDatePicker, setShowBirthdayDatePicker] = useState(false);
+  const [showGraduationDatePicker, setShowGraduationDatePicker] = useState(false);
+  const [DatePickerComponent, setDatePickerComponent] = useState(null);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+
+    const getModule = (name) => {
+      try {
+        // use eval to avoid static analysis of require by the bundler on web
+        return eval("require('" + name + "')");
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const mod = getModule('@react-native-community/datetimepicker');
+    setDatePickerComponent(() => (mod && mod.default ? mod.default : null));
+  }, []);
+
   // ================= HELPERS =================
   const formatCurrency = (n) =>
     Number(n || 0).toLocaleString("es-EC", {
@@ -94,19 +143,29 @@ export default function CreateEventScreen({ navigation }) {
 
   const isValidDate = (str) => /^\d{4}-\d{2}-\d{2}$/.test(str);
 
-  const toggleService = (service, list, setList) => {
+  const toggleService = (serviceName, list, setList) => {
     setList((prev) =>
-      prev.includes(service)
-        ? prev.filter((s) => s !== service)
-        : [...prev, service]
+      prev.includes(serviceName)
+        ? prev.filter((s) => s !== serviceName)
+        : [...prev, serviceName]
     );
   };
 
-  const calcTotal = (services) =>
-    services.reduce((sum, s) => sum + s.price, 0);
+  const toggleGuest = (guestName, data, setData) => {
+    const prev = data.selectedGuests || [];
+    const next = prev.includes(guestName)
+      ? prev.filter((g) => g !== guestName)
+      : [...prev, guestName];
+    setData({ ...data, selectedGuests: next, guests: next.length });
+  };
 
-  const birthdayTotal = calcTotal(birthdayServices);
-  const graduationTotal = calcTotal(graduationServices);
+  const calcTotal = (servicesNames, typeKey) =>
+    offers[typeKey]
+      .filter((item) => servicesNames.includes(item.name))
+      .reduce((sum, s) => sum + s.price, 0);
+
+  const birthdayTotal = calcTotal(birthdayServices, "cumpleaños");
+  const graduationTotal = calcTotal(graduationServices, "graduacion");
 
   const birthdayGeneral = birthdayTotal + Number(birthday.budget || 0);
   const graduationGeneral = graduationTotal + Number(graduation.budget || 0);
@@ -165,33 +224,34 @@ export default function CreateEventScreen({ navigation }) {
     </View>
   );
 
-  const renderAutocomplete = (label, value, setValue, suggestions) => (
-    <View style={{ marginBottom: 12 }}>
-      <TextInput
-        label={label}
-        value={value}
-        onChangeText={(v) => setValue(v)}
-        style={styles.input}
-        mode="outlined"
-        placeholder={`Escribe para sugerencias...`}
-      />
-      {value.length > 0 && (
-        <View style={styles.suggestionBox}>
-          {suggestions
-            .filter((s) => s.toLowerCase().includes(value.toLowerCase()))
-            .map((s, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => setValue(s)}
-                style={styles.suggestionItem}
-              >
+  const AutocompleteSelect = ({ label, value, onChange, suggestions }) => {
+    const [open, setOpen] = useState(false);
+    return (
+      <View style={{ marginBottom: 12 }}>
+        <TouchableOpacity
+          style={[styles.input, { padding: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
+          onPress={() => setOpen((s) => !s)}
+        >
+          <Text style={{ color: value ? '#000' : '#999' }}>{value || label}</Text>
+          {value ? (
+            <TouchableOpacity onPress={() => { onChange(''); setOpen(false); }}>
+              <Text style={{ color: '#999' }}>✕</Text>
+            </TouchableOpacity>
+          ) : null}
+        </TouchableOpacity>
+
+        {open && (
+          <View style={styles.suggestionBox}>
+            {suggestions.map((s, i) => (
+              <TouchableOpacity key={i} onPress={() => { onChange(s); setOpen(false); }} style={styles.suggestionItem}>
                 <Text>{s}</Text>
               </TouchableOpacity>
             ))}
-        </View>
-      )}
-    </View>
-  );
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderEventCard = (
     title,
@@ -215,17 +275,22 @@ export default function CreateEventScreen({ navigation }) {
         <Text style={styles.sectionTitle}>🎯 Servicios disponibles</Text>
 
         {offers[typeKey].map((item, i) => (
-          <Card key={i} style={styles.serviceCard}>
+          <Card
+            key={i}
+            style={styles.serviceCard}
+            onPress={() => toggleService(item.name, services, setServices)}
+          >
             <Card.Content style={styles.serviceRow}>
               <Checkbox
-                status={services.includes(item) ? "checked" : "unchecked"}
-                onPress={() => toggleService(item, services, setServices)}
+                status={services.includes(item.name) ? "checked" : "unchecked"}
+                onPress={() => toggleService(item.name, services, setServices)}
               />
+              {services.includes(item.name) && <View style={styles.selectedDot} />}
               <Text style={styles.serviceText}>{item.name}</Text>
               <Text style={styles.servicePrice}>{formatCurrency(item.price)}</Text>
             </Card.Content>
           </Card>
-        ))}
+        ))} 
 
         <Card style={styles.totalCard}>
           <View style={styles.totalRow}>
@@ -242,42 +307,97 @@ export default function CreateEventScreen({ navigation }) {
 
         <Text style={styles.sectionTitle}>🗓 Detalles del evento</Text>
 
-        <TextInput
+         <TextInput
           label="📅 Fecha (YYYY-MM-DD)"
           value={data.date}
           onChangeText={(v) => setData({ ...data, date: v })}
           style={styles.input}
           mode="outlined"
-          placeholder="Ej. 2026-02-14"
+          placeholder="Ej. 2026-01-20"
         />
 
-        {renderAutocomplete(
-          "👤 Organizador",
-          data.organizer,
-          (v) => setData({ ...data, organizer: v }),
-          organizers[typeKey]
-        )}
+        <AutocompleteSelect
+          label="👤 Organizador"
+          value={data.organizer}
+          onChange={(v) => setData({ ...data, organizer: v })}
+          suggestions={organizers[typeKey]}
+        />
 
-        {renderAutocomplete(
-          "🏛 Salón",
-          data.hall,
-          (v) => setData({ ...data, hall: v }),
-          halls[typeKey]
-        )}
+        <AutocompleteSelect
+          label="🏛 Salón"
+          value={data.hall}
+          onChange={(v) => setData({ ...data, hall: v })}
+          suggestions={halls[typeKey]}
+        />
 
-        {renderStepper(
-          "👥 Invitados",
-          Number(data.guests),
-          (v) => setData({ ...data, guests: v }),
-          5
-        )}
+        {/* Selección detallada de invitados */}
+        <View style={{ marginTop: 10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6 }}>
+            {data.guests > 0 && (
+              <Text style={{ fontSize: 14, color: "#37474f" }}>👥 Invitados seleccionados: {data.guests}</Text>
+            )}
+          </View>
 
-        {renderStepper(
-          "💰 Presupuesto (USD)",
-          Number(data.budget),
-          (v) => setData({ ...data, budget: v }),
-          50
-        )}
+          {data.selectedGuests && data.selectedGuests.length > 0 && (
+            <View style={styles.selectedGuestsRow}>
+              {data.selectedGuests.map((g, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.guestChip}
+                  onPress={() => toggleGuest(g, data, setData)}
+                >
+                  <Text style={styles.guestChipText}>{g} ✕</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {((typeKey === "cumpleaños" && showBirthdayGuestPicker) || (typeKey === "graduacion" && showGraduationGuestPicker)) && (
+            <View style={styles.guestPicker}>
+              {guestOptions[typeKey].map((g, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.guestItem}
+                  onPress={() => toggleGuest(g, data, setData)}
+                >
+                  <Checkbox
+                    status={data.selectedGuests.includes(g) ? "checked" : "unchecked"}
+                    onPress={() => toggleGuest(g, data, setData)}
+                  />
+                  <Text style={styles.guestName}>{g}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Campo numérico para invitados */}
+        <TextInput
+          label="👥 Invitados (número)"
+          value={String(data.guests || "")}
+          onChangeText={(v) => {
+            const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
+            setData({ ...data, guests: n, selectedGuests: (data.selectedGuests || []).slice(0, n) });
+          }}
+          style={styles.input}
+          mode="outlined"
+          keyboardType="numeric"
+          placeholder="Ej. 120"
+        />
+
+        {/* Campo numérico para presupuesto */}
+        <TextInput
+          label="💰 Presupuesto (USD)"
+          value={String(data.budget || "")}
+          onChangeText={(v) => {
+            const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
+            setData({ ...data, budget: n, budgetPreset: null });
+          }}
+          style={styles.input}
+          mode="outlined"
+          keyboardType="numeric"
+          placeholder="Ej. 1000"
+        />
 
         <TextInput
           label="✨ Extras"
@@ -454,6 +574,55 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+  },
+  selectedDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#1976d2",
+    marginRight: 8,
+  },
+  guestPicker: {
+    marginTop: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    padding: 8,
+    backgroundColor: "#fff",
+  },
+  guestItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+  },
+  guestName: {
+    marginLeft: 8,
+    fontSize: 15,
+    color: "#263238",
+  },
+  selectedGuestsRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  guestChip: {
+    backgroundColor: "#e3f2fd",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    marginRight: 6,
+  },
+  guestChipText: {
+    color: "#1565c0",
+    fontWeight: "600",
+  },
+  presetButton: {
+    borderRadius: 8,
+  },
+  presetButtonSelected: {
+    backgroundColor: "#1976d2",
+    borderRadius: 8,
   },
   stepperRow: {
     marginTop: 12,
