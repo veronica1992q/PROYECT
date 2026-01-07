@@ -37,35 +37,35 @@ export default function CreateEventScreen({ navigation }) {
   // ================= DATA =================
   const organizers = {
     cumpleaños: [
-      "Valeria Torres",
-      "Martín Herrera",
-      "Sofía Delgado",
-      "Andrés Cevallos",
-      "Carla Jiménez",
+      "Laura Mendoza",
+      "Pedro Castillo",
+      "María Fernanda López",
+      "José Ramírez",
+      "Camila Torres",
     ],
     graduacion: [
-      "Gabriela Muñoz",
-      "Diego Salazar",
-      "Natalia Ríos",
-      "Juan Esteban Paredes",
-      "Alejandra Castillo",
+      "Andrés Villalba",
+      "Paola Sánchez",
+      "Ricardo Morales",
+      "Daniela Pérez",
+      "Felipe Herrera",
     ],
   };
 
   const halls = {
     cumpleaños: [
-      "Salón Dulce Fantasía",
-      "Salón Estrella Mágica",
-      "Salón Sonrisas Kids",
-      "Salón Fiesta Colorida",
-      "Salón Mundo Infantil",
+      "Salón Fantasía Infantil",
+      "Salón Arcoiris Party",
+      "Salón Mundo de Sueños",
+      "Salón Fiesta Alegre",
+      "Salón Estrella Kids",
     ],
     graduacion: [
-      "Salón Magna",
-      "Salón Atenea",
-      "Salón Victoria",
+      "Salón Atenas",
+      "Salón Olimpo",
+      "Salón Aurora",
       "Salón Horizonte",
-      "Salón Premier",
+      "Salón Imperial",
     ],
   };
 
