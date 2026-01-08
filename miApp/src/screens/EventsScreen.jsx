@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, FlatList } from "react-native";
 import { Card, Text, Button } from "react-native-paper";
@@ -6,11 +7,16 @@ import axios from "axios";
 import { API_URL } from "../config";
 
 export default function EventsScreen({ navigation }) {
+  const { user } = useAppContext();
   const [events, setEvents] = useState([]);
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/events`);
+      if (!user?.email) {
+        setEvents([]);
+        return;
+      }
+      const res = await axios.get(`${API_URL}/api/events?user_email=${user.email}`);
       setEvents(res.data);
     } catch (err) {
       console.error("Error cargando eventos:", err.response?.data || err.message);
