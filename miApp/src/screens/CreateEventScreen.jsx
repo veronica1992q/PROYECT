@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useAppContext } from "../context/AppContext";
 import { StyleSheet, ScrollView, View, TouchableOpacity, Platform } from "react-native";
-import {
-  TextInput,
-  Button,
-  Text,
-  Card,
-  Checkbox,
-  Divider,
-} from "react-native-paper";
+import { TextInput, Button, Text, Card, Checkbox, Divider,} from "react-native-paper";
 import axios from "axios";
 import { API_URL } from "../config";
 
+
 export default function CreateEventScreen({ navigation }) {
+    const { user } = useAppContext();
   // ================= STATES =================
   const [birthday, setBirthday] = useState({
     date: "",
@@ -193,6 +189,7 @@ export default function CreateEventScreen({ navigation }) {
         services,
         totalServices,
         totalGeneral,
+        user_email: user?.email || "",
       });
 
       alert("🎉 Evento creado con éxito");
@@ -290,7 +287,7 @@ export default function CreateEventScreen({ navigation }) {
               <Text style={styles.servicePrice}>{formatCurrency(item.price)}</Text>
             </Card.Content>
           </Card>
-        ))} 
+        ))}
 
         <Card style={styles.totalCard}>
           <View style={styles.totalRow}>

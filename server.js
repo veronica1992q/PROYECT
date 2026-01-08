@@ -57,6 +57,7 @@ app.post("/api/auth/login", (req, res) => {
 
 // ✅ Crear evento con validación de salón ocupado
 app.post("/api/events", (req, res) => {
+    console.log("[POST /api/events] body:", req.body);
   const { date, organizer, presetTitle, offers, extras, hall, user_email } = req.body;
 
   if (!date || !organizer || !hall || !user_email) {
