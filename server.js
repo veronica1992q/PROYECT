@@ -57,10 +57,10 @@ app.post("/api/auth/login", (req, res) => {
 
 // ✅ Crear evento con validación de salón ocupado
 app.post("/api/events", (req, res) => {
-  const { date, organizer, presetTitle, offers, extras, hall } = req.body;
+  const { date, organizer, presetTitle, offers, extras, hall, user_email } = req.body;
 
-  if (!date || !organizer || !hall) {
-    return res.status(400).json({ message: "Fecha, organizador y salón son obligatorios" });
+  if (!date || !organizer || !hall || !user_email) {
+    return res.status(400).json({ message: "Fecha, organizador, salón y email son obligatorios" });
   }
 
   // Verificar si el salón ya está ocupado en esa fecha
@@ -74,9 +74,12 @@ app.post("/api/events", (req, res) => {
   }
 
   const event = {
+    id: events.length + 1,
     date,
     organizer,
     hall,
+    user_email,
+    status: "pending",
     presetTitle: presetTitle || "Evento",
     offers: offers || [],
     extras: extras || "",
@@ -88,6 +91,11 @@ app.post("/api/events", (req, res) => {
 
 // ✅ Listar eventos
 app.get("/api/events", (req, res) => {
+  const { user_email } = req.query;
+  if (user_email) {
+    const filtered = events.filter((e) => e.user_email === user_email);
+    return res.json(filtered);
+  }
   res.json(events);
 });
 
