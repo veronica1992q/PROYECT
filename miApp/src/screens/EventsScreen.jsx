@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, FlatList } from "react-native";
 import { Card, Text, Button } from "react-native-paper";
 import axios from "axios";
 import { API_URL } from "../config";
 
-export default function EventsScreen() {
+export default function EventsScreen({ navigation }) {
   const [events, setEvents] = useState([]);
 
   const fetchEvents = async () => {
@@ -25,9 +26,11 @@ export default function EventsScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchEvents();
+    }, [])
+  );
 
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
@@ -48,7 +51,7 @@ export default function EventsScreen() {
         <Button
           mode="contained"
           style={styles.deleteButton}
-          onPress={() => deleteEvent(item._id)}
+          onPress={() => deleteEvent(item.id)}
         >
           Eliminar
         </Button>
@@ -61,7 +64,7 @@ export default function EventsScreen() {
       <Text style={styles.header}>📋 Mis Eventos</Text>
       <FlatList
         data={events}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         ListEmptyComponent={<Text style={styles.empty}>No tienes eventos creados aún</Text>}
       />

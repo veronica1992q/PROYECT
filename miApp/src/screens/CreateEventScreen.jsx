@@ -195,7 +195,11 @@ export default function CreateEventScreen({ navigation }) {
       alert("🎉 Evento creado con éxito");
       navigation.navigate("Events");
     } catch (error) {
-      alert("❌ Error al crear el evento");
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(error.response.data.message + (error.response.data.suggestion ? "\n" + error.response.data.suggestion : ""));
+      } else {
+        alert("❌ Error al crear el evento");
+      }
     }
   };
 
