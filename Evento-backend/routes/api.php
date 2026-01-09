@@ -12,10 +12,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
 });
-
-
-User::create([
- 'name' => 'Nicole Alvia',
- 'email' => 'nickyalvia26@gmail.com',
- 'password' => Hash::make('123456')
-]);
