@@ -57,9 +57,6 @@ export default function EventsScreen({ navigation }) {
         {item.extras && <Text>✨ Extras: {item.extras}</Text>}
       </Card.Content>
       <Card.Actions>
-        <Button onPress={() => navigation.navigate("EditEventScreen", { eventId: item.id })}>
-          ✏️ Editar
-        </Button>
         <Button onPress={() => deleteEvent(item.id)} color="red">
           🗑 Eliminar
         </Button>

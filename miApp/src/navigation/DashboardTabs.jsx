@@ -1,81 +1,65 @@
 import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Button } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
-import { Card, Text, Button } from "react-native-paper";
 
-export default function Dashboard({ navigation }) {
+import HomeScreen from "../screens/HomeScreen";
+import CreateEventScreen from "../screens/CreateEventScreen";
+import EventsScreen from "../screens/EventsScreen";
+import { useAppContext } from "../context/AppContext";
+
+const Tab = createBottomTabNavigator();
+
+function LogoutScreen({ navigation }) {
+  const { logout } = useAppContext();
+
+  const handleLogout = () => {
+    logout();
+
+    // 🔴 RESETEA TODA LA NAVEGACIÓN Y VA AL LOGIN
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Login" }],
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Card style={styles.heroCard}>
-        <Card.Content>
-          <Text style={styles.heroTitle}>📊 Panel Principal</Text>
-          <Text style={styles.heroSubtitle}>
-            Bienvenida, aquí gestionas todos tus eventos
-          </Text>
-        </Card.Content>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.cardTitle}>🎉 Crear Evento</Text>
-          <Text style={styles.cardText}>
-            Registra un nuevo cumpleaños o graduación.
-          </Text>
-        </Card.Content>
-        <Card.Actions>
-          <Button
-            mode="contained"
-            onPress={() => navigation.navigate("CreateEventScreen")}
-          >
-            ➕ Crear
-          </Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.cardTitle}>📋 Lista de Eventos</Text>
-          <Text style={styles.cardText}>
-            Consulta todos los eventos registrados.
-          </Text>
-        </Card.Content>
-        <Card.Actions>
-          <Button
-            mode="contained"
-            onPress={() => navigation.navigate("EventsScreen")}
-          >
-            📂 Ver Lista
-          </Button>
-        </Card.Actions>
-      </Card>
-
-      <Card style={styles.card}>
-        <Card.Content>
-          <Text style={styles.cardTitle}>✏️ Editar Evento</Text>
-          <Text style={styles.cardText}>
-            Modifica los detalles de un evento existente.
-          </Text>
-        </Card.Content>
-        <Card.Actions>
-          <Button
-            mode="contained"
-            onPress={() =>
-              navigation.navigate("EditEventScreen", { eventId: 1 }) // ejemplo
-            }
-          >
-            🔧 Editar
-          </Button>
-        </Card.Actions>
-      </Card>
+      <Button mode="contained" onPress={handleLogout} style={styles.button}>
+        Cerrar Sesión
+      </Button>
     </View>
   );
 }
 
+export default function DashboardTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === "Home") iconName = "home";
+          else if (route.name === "CreateEvent") iconName = "event";
+          else if (route.name === "Events") iconName = "list";
+          else if (route.name === "Logout") iconName = "logout";
+
+          return <MaterialIcons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "#1976d2",
+        tabBarInactiveTintColor: "gray",
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: "Inicio" }} />
+      <Tab.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: "Crear Evento" }} />
+      <Tab.Screen name="Events" component={EventsScreen} options={{ title: "Mis Eventos" }} />
+      <Tab.Screen name="Logout" component={LogoutScreen} options={{ title: "Cerrar Sesión" }} />
+    </Tab.Navigator>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f9f9f9" },
-  heroCard: { marginBottom: 20 },
-  heroTitle: { fontSize: 22, fontWeight: "bold" },
-  heroSubtitle: { fontSize: 14, color: "#666" },
-  card: { marginBottom: 15 },
-  cardTitle: { fontSize: 18, fontWeight: "bold" },
-  cardText: { fontSize: 14, marginVertical: 5 },
+  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  button: { backgroundColor: "#d32f2f", paddingHorizontal: 20 },
 });
