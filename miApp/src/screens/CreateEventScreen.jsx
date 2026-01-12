@@ -1,72 +1,63 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
-import { StyleSheet, ScrollView, View, TouchableOpacity, Platform } from "react-native";
-import { TextInput, Button, Text, Card, Checkbox, Divider,} from "react-native-paper";
+import { StyleSheet, ScrollView, View } from "react-native";
+import { TextInput, Button, Text, Card, Checkbox, Divider } from "react-native-paper";
 import axios from "axios";
 import { API_URL } from "../config";
 
+// Componente reutilizable para selección automática
+const AutocompleteSelect = ({ label, value, onChange, suggestions }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={{ marginBottom: 12 }}>
+      <Button mode="outlined" onPress={() => setOpen(!open)} style={styles.toggleButton}>
+        {value ? `${label}: ${value}` : `Seleccionar ${label}`}
+      </Button>
+      {open && (
+        <View style={styles.suggestionBox}>
+          {suggestions.map((s, i) => (
+            <Button
+              key={i}
+              mode={value === s ? "contained" : "outlined"}
+              onPress={() => {
+                onChange(s);
+                setOpen(false);
+              }}
+              style={styles.suggestionItem}
+            >
+              {s}
+            </Button>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 
 export default function CreateEventScreen({ navigation }) {
-    const { user } = useAppContext();
-  // ================= STATES =================
-  const [birthday, setBirthday] = useState({
+  const { user } = useAppContext();
+
+  // ================= STATE ÚNICO =================
+  const [event, setEvent] = useState({
+    type: "cumpleaños", // alterna entre "cumpleaños" y "graduacion"
     date: "",
     organizer: "",
     hall: "",
     guests: 0,
     budget: 0,
     extras: "",
-    selectedGuests: [],
-    budgetPreset: null,
+    services: [],
   });
-
-  const [graduation, setGraduation] = useState({
-    date: "",
-    organizer: "",
-    hall: "",
-    guests: 0,
-    budget: 0,
-    extras: "",
-    selectedGuests: [],
-    budgetPreset: null,
-  });
-
-  const [birthdayServices, setBirthdayServices] = useState([]);
-  const [graduationServices, setGraduationServices] = useState([]);
 
   // ================= DATA =================
   const organizers = {
-    cumpleaños: [
-      "Laura Mendoza",
-      "Pedro Castillo",
-      "María Fernanda López",
-      "José Ramírez",
-      "Camila Torres",
-    ],
-    graduacion: [
-      "Andrés Villalba",
-      "Paola Sánchez",
-      "Ricardo Morales",
-      "Daniela Pérez",
-      "Felipe Herrera",
-    ],
+    cumpleaños: ["Laura Mendoza", "Pedro Castillo", "María López", "José Ramírez", "Camila Torres"],
+    graduacion: ["Andrés Villalba", "Paola Sánchez", "Ricardo Morales", "Daniela Pérez", "Felipe Herrera"],
   };
 
   const halls = {
-    cumpleaños: [
-      "Salón Fantasía Infantil",
-      "Salón Arcoiris Party",
-      "Salón Mundo de Sueños",
-      "Salón Fiesta Alegre",
-      "Salón Estrella Kids",
-    ],
-    graduacion: [
-      "Salón Atenas",
-      "Salón Olimpo",
-      "Salón Aurora",
-      "Salón Horizonte",
-      "Salón Imperial",
-    ],
+    cumpleaños: ["Salón Fantasía Infantil", "Salón Arcoiris Party", "Salón Mundo de Sueños", "Salón Fiesta Alegre", "Salón Estrella Kids"],
+    graduacion: ["Salón Atenas", "Salón Olimpo", "Salón Aurora", "Salón Horizonte", "Salón Imperial"],
   };
 
   const offers = {
@@ -84,51 +75,6 @@ export default function CreateEventScreen({ navigation }) {
     ],
   };
 
-  // Opciones de invitados de ejemplo
-  const guestOptions = {
-    cumpleaños: [
-      "Ana García",
-      "Luis Paredes",
-      "María Gómez",
-      "Carlos Ruiz",
-      "Sofía Jiménez",
-    ],
-    graduacion: [
-      "Pedro Ortega",
-      "Lucía Mora",
-      "Diego Vargas",
-      "Fernanda Cruz",
-      "Javier León",
-    ],
-  };
-
-  const budgetPresets = [200, 500, 1000, 2000];
-
-  // UI state for guest pickers
-  const [showBirthdayGuestPicker, setShowBirthdayGuestPicker] = useState(false);
-  const [showGraduationGuestPicker, setShowGraduationGuestPicker] = useState(false);
-
-  // UI state for date pickers
-  const [showBirthdayDatePicker, setShowBirthdayDatePicker] = useState(false);
-  const [showGraduationDatePicker, setShowGraduationDatePicker] = useState(false);
-  const [DatePickerComponent, setDatePickerComponent] = useState(null);
-
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-
-    const getModule = (name) => {
-      try {
-        // use eval to avoid static analysis of require by the bundler on web
-        return eval("require('" + name + "')");
-      } catch (e) {
-        return null;
-      }
-    };
-
-    const mod = getModule('@react-native-community/datetimepicker');
-    setDatePickerComponent(() => (mod && mod.default ? mod.default : null));
-  }, []);
-
   // ================= HELPERS =================
   const formatCurrency = (n) =>
     Number(n || 0).toLocaleString("es-EC", {
@@ -139,20 +85,12 @@ export default function CreateEventScreen({ navigation }) {
 
   const isValidDate = (str) => /^\d{4}-\d{2}-\d{2}$/.test(str);
 
-  const toggleService = (serviceName, list, setList) => {
-    setList((prev) =>
-      prev.includes(serviceName)
-        ? prev.filter((s) => s !== serviceName)
-        : [...prev, serviceName]
-    );
-  };
-
-  const toggleGuest = (guestName, data, setData) => {
-    const prev = data.selectedGuests || [];
-    const next = prev.includes(guestName)
-      ? prev.filter((g) => g !== guestName)
-      : [...prev, guestName];
-    setData({ ...data, selectedGuests: next, guests: next.length });
+  const toggleService = (serviceName) => {
+    const prev = event.services || [];
+    const next = prev.includes(serviceName)
+      ? prev.filter((s) => s !== serviceName)
+      : [...prev, serviceName];
+    setEvent({ ...event, services: next });
   };
 
   const calcTotal = (servicesNames, typeKey) =>
@@ -160,33 +98,26 @@ export default function CreateEventScreen({ navigation }) {
       .filter((item) => servicesNames.includes(item.name))
       .reduce((sum, s) => sum + s.price, 0);
 
-  const birthdayTotal = calcTotal(birthdayServices, "cumpleaños");
-  const graduationTotal = calcTotal(graduationServices, "graduacion");
+  // ================= CREATE EVENT =================
+  const createEvent = async () => {
+    const totalServices = calcTotal(event.services, event.type);
+    const totalGeneral = totalServices + Number(event.budget || 0);
 
-  const birthdayGeneral = birthdayTotal + Number(birthday.budget || 0);
-  const graduationGeneral = graduationTotal + Number(graduation.budget || 0);
-
-  const createEvent = async (type) => {
-    const data = type === "Cumpleaños" ? birthday : graduation;
-    const services = type === "Cumpleaños" ? birthdayServices : graduationServices;
-    const totalServices = type === "Cumpleaños" ? birthdayTotal : graduationTotal;
-    const totalGeneral = type === "Cumpleaños" ? birthdayGeneral : graduationGeneral;
-
-    if (!data.date || !data.organizer || !data.hall) {
+    if (!event.date || !event.organizer || !event.hall) {
       alert("⚠️ Completa fecha, organizador y salón");
       return;
     }
-    if (!isValidDate(data.date)) {
+    if (!isValidDate(event.date)) {
       alert("📅 Usa el formato de fecha YYYY-MM-DD (ej. 2026-01-20)");
       return;
     }
 
     try {
-      await axios.post(`${API_URL}/api/events`, {
-        type,
-        presetTitle: type === "Cumpleaños" ? "🎂 Cumpleaños" : "🎓 Graduación",
-        ...data,
-        services,
+      await axios.post(`${API_URL}/api/eventos`, {
+        type: event.type === "cumpleaños" ? "Cumpleaños" : "Graduación",
+        presetTitle: event.type === "cumpleaños" ? "🎂 Cumpleaños" : "🎓 Graduación",
+        ...event,
+        services: event.services,
         totalServices,
         totalGeneral,
         user_email: user?.email || "",
@@ -195,231 +126,9 @@ export default function CreateEventScreen({ navigation }) {
       alert("🎉 Evento creado con éxito");
       navigation.navigate("Events");
     } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        alert(error.response.data.message + (error.response.data.suggestion ? "\n" + error.response.data.suggestion : ""));
-      } else {
-        alert("❌ Error al crear el evento");
-      }
+      alert("❌ Error al crear el evento");
     }
   };
-
-  // ================= UI HELPERS =================
-  const renderStepper = (label, value, setValue, step = 1) => (
-    <View style={styles.stepperRow}>
-      <Text style={styles.stepperLabel}>{label}</Text>
-      <View style={styles.stepperControls}>
-        <TouchableOpacity
-          style={styles.stepperButton}
-          onPress={() => setValue(Math.max(0, value - step))}
-        >
-          <Text style={styles.stepperText}>➖</Text>
-        </TouchableOpacity>
-        <Text style={styles.stepperValue}>{value}</Text>
-        <TouchableOpacity
-          style={styles.stepperButton}
-          onPress={() => setValue(value + step)}
-        >
-          <Text style={styles.stepperText}>➕</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  const AutocompleteSelect = ({ label, value, onChange, suggestions }) => {
-    const [open, setOpen] = useState(false);
-    return (
-      <View style={{ marginBottom: 12 }}>
-        <TouchableOpacity
-          style={[styles.input, { padding: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
-          onPress={() => setOpen((s) => !s)}
-        >
-          <Text style={{ color: value ? '#000' : '#999' }}>{value || label}</Text>
-          {value ? (
-            <TouchableOpacity onPress={() => { onChange(''); setOpen(false); }}>
-              <Text style={{ color: '#999' }}>✕</Text>
-            </TouchableOpacity>
-          ) : null}
-        </TouchableOpacity>
-
-        {open && (
-          <View style={styles.suggestionBox}>
-            {suggestions.map((s, i) => (
-              <TouchableOpacity key={i} onPress={() => { onChange(s); setOpen(false); }} style={styles.suggestionItem}>
-                <Text>{s}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const renderEventCard = (
-    title,
-    typeKey,
-    typeLabel,
-    data,
-    setData,
-    services,
-    setServices,
-    subtotal,
-    total
-  ) => (
-    <Card style={styles.eventCard}>
-      <Card.Title
-        title={title}
-        subtitle="✨ Personaliza cada detalle"
-        titleStyle={styles.cardTitle}
-        subtitleStyle={styles.cardSubtitle}
-      />
-      <Card.Content>
-        <Text style={styles.sectionTitle}>🎯 Servicios disponibles</Text>
-
-        {offers[typeKey].map((item, i) => (
-          <Card
-            key={i}
-            style={styles.serviceCard}
-            onPress={() => toggleService(item.name, services, setServices)}
-          >
-            <Card.Content style={styles.serviceRow}>
-              <Checkbox
-                status={services.includes(item.name) ? "checked" : "unchecked"}
-                onPress={() => toggleService(item.name, services, setServices)}
-              />
-              {services.includes(item.name) && <View style={styles.selectedDot} />}
-              <Text style={styles.serviceText}>{item.name}</Text>
-              <Text style={styles.servicePrice}>{formatCurrency(item.price)}</Text>
-            </Card.Content>
-          </Card>
-        ))}
-
-        <Card style={styles.totalCard}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Subtotal servicios</Text>
-            <Text style={styles.totalValue}>{formatCurrency(subtotal)}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total del evento</Text>
-            <Text style={styles.totalFinal}>{formatCurrency(total)}</Text>
-          </View>
-        </Card>
-
-        <Divider style={{ marginVertical: 12 }} />
-
-        <Text style={styles.sectionTitle}>🗓 Detalles del evento</Text>
-
-         <TextInput
-          label="📅 Fecha (YYYY-MM-DD)"
-          value={data.date}
-          onChangeText={(v) => setData({ ...data, date: v })}
-          style={styles.input}
-          mode="outlined"
-          placeholder="Ej. 2026-01-20"
-        />
-
-        <AutocompleteSelect
-          label="👤 Organizador"
-          value={data.organizer}
-          onChange={(v) => setData({ ...data, organizer: v })}
-          suggestions={organizers[typeKey]}
-        />
-
-        <AutocompleteSelect
-          label="🏛 Salón"
-          value={data.hall}
-          onChange={(v) => setData({ ...data, hall: v })}
-          suggestions={halls[typeKey]}
-        />
-
-        {/* Selección detallada de invitados */}
-        <View style={{ marginTop: 10 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 6 }}>
-            {data.guests > 0 && (
-              <Text style={{ fontSize: 14, color: "#37474f" }}>👥 Invitados seleccionados: {data.guests}</Text>
-            )}
-          </View>
-
-          {data.selectedGuests && data.selectedGuests.length > 0 && (
-            <View style={styles.selectedGuestsRow}>
-              {data.selectedGuests.map((g, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.guestChip}
-                  onPress={() => toggleGuest(g, data, setData)}
-                >
-                  <Text style={styles.guestChipText}>{g} ✕</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {((typeKey === "cumpleaños" && showBirthdayGuestPicker) || (typeKey === "graduacion" && showGraduationGuestPicker)) && (
-            <View style={styles.guestPicker}>
-              {guestOptions[typeKey].map((g, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.guestItem}
-                  onPress={() => toggleGuest(g, data, setData)}
-                >
-                  <Checkbox
-                    status={data.selectedGuests.includes(g) ? "checked" : "unchecked"}
-                    onPress={() => toggleGuest(g, data, setData)}
-                  />
-                  <Text style={styles.guestName}>{g}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Campo numérico para invitados */}
-        <TextInput
-          label="👥 Invitados (número)"
-          value={String(data.guests || "")}
-          onChangeText={(v) => {
-            const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
-            setData({ ...data, guests: n, selectedGuests: (data.selectedGuests || []).slice(0, n) });
-          }}
-          style={styles.input}
-          mode="outlined"
-          keyboardType="numeric"
-          placeholder="Ej. 120"
-        />
-
-        {/* Campo numérico para presupuesto */}
-        <TextInput
-          label="💰 Presupuesto (USD)"
-          value={String(data.budget || "")}
-          onChangeText={(v) => {
-            const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
-            setData({ ...data, budget: n, budgetPreset: null });
-          }}
-          style={styles.input}
-          mode="outlined"
-          keyboardType="numeric"
-          placeholder="Ej. 1000"
-        />
-
-        <TextInput
-          label="✨ Extras"
-          multiline
-          value={data.extras}
-          onChangeText={(v) => setData({ ...data, extras: v })}
-          style={styles.input}
-          mode="outlined"
-          placeholder="Notas especiales, requerimientos..."
-        />
-
-        <Button
-          mode="contained"
-          style={styles.createButton}
-          onPress={() => createEvent(typeLabel)}
-        >
-          🚀 Crear {typeLabel}
-        </Button>
-      </Card.Content>
-    </Card>
-  );
 
   // ================= RENDER =================
   return (
@@ -427,38 +136,126 @@ export default function CreateEventScreen({ navigation }) {
       <Card style={styles.heroCard}>
         <Card.Content>
           <Text style={styles.heroTitle}>🎉 Crea tu Evento Ideal</Text>
-          <Text style={styles.heroSubtitle}>
-            Hazlo único, elegante e inolvidable
-          </Text>
+          <Text style={styles.heroSubtitle}>Hazlo único, elegante e inolvidable</Text>
         </Card.Content>
       </Card>
 
-      {renderEventCard(
-        "🎂 Fiesta de Cumpleaños",
-        "cumpleaños",
-        "Cumpleaños",
-        birthday,
-        setBirthday,
-        birthdayServices,
-        setBirthdayServices,
-        birthdayTotal,
-        birthdayGeneral
-      )}
+      {/* Selector de tipo de evento */}
+      <View style={styles.selectorRow}>
+        <Button
+          mode={event.type === "cumpleaños" ? "contained" : "outlined"}
+          onPress={() => setEvent({ ...event, type: "cumpleaños", organizer: "", hall: "" })}
+        >
+          🎂 Cumpleaños
+        </Button>
+        <Button
+          mode={event.type === "graduacion" ? "contained" : "outlined"}
+          onPress={() => setEvent({ ...event, type: "graduacion", organizer: "", hall: "" })}
+        >
+          🎓 Graduación
+        </Button>
+      </View>
 
-      {renderEventCard(
-        "🎓 Evento de Graduación",
-        "graduacion",
-        "Graduación",
-        graduation,
-        setGraduation,
-        graduationServices,
-        setGraduationServices,
-        graduationTotal,
-        graduationGeneral
-      )}
+      {/* Servicios */}
+      {offers[event.type].map((item, i) => (
+        <Card key={i} style={styles.serviceCard} onPress={() => toggleService(item.name)}>
+          <Card.Content style={styles.serviceRow}>
+            <Checkbox
+              status={event.services.includes(item.name) ? "checked" : "unchecked"}
+              onPress={() => toggleService(item.name)}
+            />
+            <Text style={styles.serviceText}>{item.name}</Text>
+            <Text style={styles.servicePrice}>{formatCurrency(item.price)}</Text>
+          </Card.Content>
+        </Card>
+      ))}
+
+      {/* Totales */}
+      <Card style={styles.totalCard}>
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Subtotal servicios</Text>
+          <Text style={styles.totalValue}>{formatCurrency(calcTotal(event.services, event.type))}</Text>
+        </View>
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Total del evento</Text>
+          <Text style={styles.totalFinal}>
+            {formatCurrency(calcTotal(event.services, event.type) + Number(event.budget || 0))}
+          </Text>
+        </View>
+      </Card>
+
+      <Divider style={{ marginVertical: 12 }} />
+
+      {/* Detalles */}
+      <TextInput
+        label="📅 Fecha (YYYY-MM-DD)"
+        value={event.date}
+        onChangeText={(v) => setEvent({ ...event, date: v })}
+        style={styles.input}
+        mode="outlined"
+        placeholder="Ej. 2026-01-20"
+      />
+
+      {/* Selector dinámico de organizador */}
+      <AutocompleteSelect
+        label="Organizador"
+        value={event.organizer}
+        onChange={(v) => setEvent({ ...event, organizer: v })}
+        suggestions={organizers[event.type]}
+      />
+
+      {/* Selector dinámico de salón */}
+      <AutocompleteSelect
+        label="Salón"
+        value={event.hall}
+        onChange={(v) => setEvent({ ...event, hall: v })}
+        suggestions={halls[event.type]}
+      />
+
+      <TextInput
+        label="👥 Invitados (número)"
+        value={String(event.guests || "")}
+        onChangeText={(v) => {
+          const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
+          setEvent({ ...event, guests: n });
+        }}
+        style={styles.input}
+        mode="outlined"
+        keyboardType="numeric"
+        placeholder="Ej. 120"
+      />
+
+      <TextInput
+        label="💰 Presupuesto (USD)"
+        value={String(event.budget || "")}
+        onChangeText={(v) => {
+          const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
+          setEvent({ ...event, budget: n });
+        }}
+        style={styles.input}
+        mode="outlined"
+        keyboardType="numeric"
+        placeholder="Ej. 1000"
+      />
+
+      <TextInput
+        label="✨ Extras"
+        multiline
+        value={event.extras}
+        onChangeText={(v) => setEvent({ ...event, extras: v })}
+        style={styles.input}
+        mode="outlined"
+        placeholder="Notas especiales, requerimientos..."
+      />
+
+      <Button mode="contained" style={styles.createButton} onPress={createEvent}>
+        🚀 Crear {event.type === "cumpleaños" ? "Cumpleaños" : "Graduación"}
+      </Button>
     </ScrollView>
   );
 }
+
+
 
 // ================= STYLES =================
 const styles = StyleSheet.create({
