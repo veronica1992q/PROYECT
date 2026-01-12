@@ -1,67 +1,99 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, Snackbar, Card } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
+import apiClient from "../services/apiClient";
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
+
   const { login } = useAppContext();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError("");
+
     if (!email || !password) {
       setError("Por favor ingresa tu correo y contraseña");
       return;
     }
-    login({ name: email.split("@")[0], email });
-    navigation.replace("Dashboard");
+
+    try {
+      setLoading(true);
+
+      // ---- petición real al backend ----
+      const { data } = await apiClient.post("/login", {
+        email,
+        password,
+      });
+
+      // ---- guarda sesión global ----
+      await login(data.user, data.token);
+
+      // No usamos navigation: App cambia sola gracias al contexto
+
+    } catch (e) {
+      setError("Correo o contraseña incorrectos");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🔐 Iniciar Sesión</Text>
+      <Card style={styles.card}>
+        <Card.Content>
 
-      <TextInput
-        label="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        mode="outlined"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+          <Text style={styles.title}>🔐 Iniciar sesión</Text>
 
-      <TextInput
-        label="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        mode="outlined"
-        secureTextEntry={!showPassword}
-        right={
-          <TextInput.Icon
-            icon={showPassword ? "eye-off" : "eye"}
-            onPress={() => setShowPassword(!showPassword)}
+          <TextInput
+            label="Correo electrónico"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
-        }
-      />
 
-      {error !== "" && <Text style={styles.error}>{error}</Text>}
+          <TextInput
+            label="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            mode="outlined"
+            style={styles.input}
+            secureTextEntry={!showPassword}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye-off" : "eye"}
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+          />
 
-      <Button mode="contained" onPress={handleLogin} style={styles.button}>
-        Entrar
-      </Button>
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+            loading={loading}
+            style={styles.button}
+          >
+            Entrar
+          </Button>
 
-      <Button
-        mode="text"
-        onPress={() => navigation.replace("Register")}
-        style={styles.link}
+        </Card.Content>
+      </Card>
+
+      <Snackbar
+        visible={!!error}
+        onDismiss={() => setError("")}
+        duration={3000}
       >
-        ¿No tienes cuenta? Regístrate
-      </Button>
+        {error}
+      </Snackbar>
     </View>
   );
 }
@@ -70,32 +102,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    padding: 20,
-    backgroundColor: "#f5f5f5",
+    padding: 22,
+    backgroundColor: "#f5f6fa",
+  },
+  card: {
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    elevation: 5,
+    borderRadius: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
+    marginBottom: 16,
   },
   input: {
-    marginBottom: 15,
+    marginBottom: 14,
   },
   button: {
-    marginTop: 10,
-    backgroundColor: "#1976d2",
-  },
-  link: {
-    marginTop: 10,
-  },
-  error: {
-    color: "red",
-    marginBottom: 10,
-    textAlign: "center",
+    marginTop: 8,
   },
 });
-
-
-
-

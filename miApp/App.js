@@ -3,42 +3,44 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Provider as PaperProvider } from "react-native-paper";
 
-import { AppProvider } from "./src/context/AppContext";
-import DashboardTabs from "./src/navigation/DashboardTabs";
+import { AppProvider, useAppContext } from "./src/context/AppContext";
+
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
+import DashboardTabs from "./src/navigation/DashboardTabs";
 
 const Stack = createNativeStackNavigator();
+
+function RootNavigator() {
+  const { user, loadingAuth, paperTheme } = useAppContext();
+
+  // Esperar a que se cargue el token del AsyncStorage
+  if (loadingAuth) return null; // o puedes poner Splash Screen
+
+  return (
+    <PaperProvider theme={paperTheme}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+
+          {!user ? (
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Register" component={RegisterScreen} />
+            </>
+          ) : (
+            <Stack.Screen name="Dashboard" component={DashboardTabs} />
+          )}
+
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PaperProvider>
+  );
+}
 
 export default function App() {
   return (
     <AppProvider>
-      <PaperProvider>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login">
-            {/* 🔐 Login */}
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ headerShown: false }}
-            />
-
-            {/* 📝 Registro */}
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{ headerShown: false }}
-            />
-
-            {/* 📂 Dashboard con pestañas */}
-            <Stack.Screen
-              name="Dashboard"
-              component={DashboardTabs}
-              options={{ headerShown: false }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </PaperProvider>
+      <RootNavigator />
     </AppProvider>
   );
 }
