@@ -1,70 +1,128 @@
-import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Text } from "react-native-paper";
+import React, { useState, useEffect } from "react";
+import { View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, Card, Divider, TextInput, Checkbox, Button } from "react-native-paper";
+import apiClient from "../services/apiClient";
 import { useAppContext } from "../context/AppContext";
 
 export default function EditEventScreen({ route, navigation }) {
   const { user } = useAppContext();
-  const { event } = route.params;
+  const { eventId } = route.params; // ID del evento a editar
 
-  const [title, setTitle] = useState(event.title);
-  const [date, setDate] = useState(event.date);
-  const [error, setError] = useState("");
+  const [eventData, setEventData] = useState({
+    fecha: "",
+    anfitrion: "",
+    lugar: "",
+    invitados: 0,
+    presupuesto: 0,
+    extras: "",
+    servicios: [],
+  });
 
-  // 🔒 Seguridad: solo el dueño puede editar
-  if (user.role !== "user" || event.user_id !== user.id) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.error}>No tienes permiso para editar este evento</Text>
-      </View>
-    );
-  }
+  // ================= CARGAR EVENTO =================
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const response = await apiClient.get(`/eventos/${eventId}`);
+        setEventData(response.data);
+      } catch (error) {
+        console.error(error.response?.data || error.message);
+      }
+    };
+    fetchEvent();
+  }, [eventId]);
 
-  const handleUpdate = () => {
-    if (!title || !date) {
-      setError("Todos los campos son obligatorios");
-      return;
+  // ================= ACTUALIZAR EVENTO =================
+  const updateEvent = async () => {
+    try {
+      await apiClient.put(`/eventos/${eventId}`, {
+        ...eventData,
+        user_email: user?.email || "",
+      });
+      alert("✅ Evento actualizado con éxito");
+      navigation.navigate("EventsScreen");
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+      alert("❌ Error al actualizar el evento");
     }
-
-    // 🔧 AQUÍ irá el PUT al backend
-    console.log("Evento actualizado:", { title, date });
-
-    navigation.goBack();
   };
 
+  // ================= UI =================
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>✏️ Editar Evento</Text>
+    <ScrollView style={styles.container}>
+      <Card style={styles.heroCard}>
+        <Card.Content>
+          <Text style={styles.heroTitle}>✏️ Editar Evento</Text>
+          <Text style={styles.heroSubtitle}>Actualiza los detalles de tu evento</Text>
+        </Card.Content>
+      </Card>
 
       <TextInput
-        label="Título"
-        value={title}
-        onChangeText={setTitle}
+        label="📅 Fecha (YYYY-MM-DD)"
+        value={eventData.fecha}
+        onChangeText={(v) => setEventData({ ...eventData, fecha: v })}
         style={styles.input}
         mode="outlined"
       />
 
       <TextInput
-        label="Fecha"
-        value={date}
-        onChangeText={setDate}
+        label="👤 Anfitrión"
+        value={eventData.anfitrion}
+        onChangeText={(v) => setEventData({ ...eventData, anfitrion: v })}
         style={styles.input}
         mode="outlined"
       />
 
-      {error !== "" && <Text style={styles.error}>{error}</Text>}
+      <TextInput
+        label="🏛 Lugar"
+        value={eventData.lugar}
+        onChangeText={(v) => setEventData({ ...eventData, lugar: v })}
+        style={styles.input}
+        mode="outlined"
+      />
 
-      <Button mode="contained" onPress={handleUpdate} style={styles.button}>
-        Guardar Cambios
+      <TextInput
+        label="👥 Invitados"
+        value={String(eventData.invitados)}
+        onChangeText={(v) =>
+          setEventData({ ...eventData, invitados: parseInt(v.replace(/[^0-9]/g, ""), 10) || 0 })
+        }
+        style={styles.input}
+        mode="outlined"
+        keyboardType="numeric"
+      />
+
+      <TextInput
+        label="💰 Presupuesto (USD)"
+        value={String(eventData.presupuesto)}
+        onChangeText={(v) =>
+          setEventData({ ...eventData, presupuesto: parseInt(v.replace(/[^0-9]/g, ""), 10) || 0 })
+        }
+        style={styles.input}
+        mode="outlined"
+        keyboardType="numeric"
+      />
+
+      <TextInput
+        label="✨ Extras"
+        multiline
+        value={eventData.extras}
+        onChangeText={(v) => setEventData({ ...eventData, extras: v })}
+        style={styles.input}
+        mode="outlined"
+      />
+
+      <Button mode="contained" style={styles.updateButton} onPress={updateEvent}>
+        💾 Guardar Cambios
       </Button>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#f5f5f5" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  input: { marginBottom: 15 },
-  button: { backgroundColor: "#1976d2" },
-  error: { color: "red", textAlign: "center", marginBottom: 10 },
+  container: { flex: 1, padding: 20 },
+  heroCard: { marginBottom: 20 },
+  heroTitle: { fontSize: 20, fontWeight: "bold" },
+  heroSubtitle: { fontSize: 14, color: "#666" },
+  input: { marginBottom: 12 },
+  updateButton: { marginTop: 20 },
 });
