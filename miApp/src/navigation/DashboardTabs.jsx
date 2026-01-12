@@ -55,6 +55,7 @@ export default function DashboardTabs() {
       <Tab.Screen name="CreateEvent" component={CreateEventScreen} options={{ title: "Crear Evento" }} />
       <Tab.Screen name="Events" component={EventsScreen} options={{ title: "Mis Eventos" }} />
       <Tab.Screen name="Logout" component={LogoutScreen} options={{ title: "Cerrar Sesión" }} />
+
     </Tab.Navigator>
   );
 }

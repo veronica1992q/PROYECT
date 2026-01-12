@@ -1,23 +1,51 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Text } from "react-native-paper";
+import { TextInput, Button, Text, Snackbar } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
+import apiClient from "../services/apiClient";
 
 export default function RegisterScreen({ navigation }) {
   const { login } = useAppContext();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleRegister = () => {
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleRegister = async () => {
     setError("");
+    setSuccess("");
+
     if (!name || !email || !password) {
-      setError("Por favor completa todos los campos");
+      setError("Completa todos los campos");
       return;
     }
-    login({ name, email });
-    navigation.replace("Dashboard");
+
+    try {
+      const response = await apiClient.post("/register", {
+        name,
+        email,
+        password,
+      });
+
+      // Laravel devuelve user + token normalmente
+      const user = response.data.user;
+      const token = response.data.token;
+
+      // guardamos sesión
+      login({ user, token });
+
+      setSuccess("Usuario registrado correctamente");
+      navigation.replace("Dashboard");
+
+    } catch (err) {
+      console.log(err.response?.data);
+      setError(
+        err.response?.data?.message || "Error al registrar el usuario"
+      );
+    }
   };
 
   return (
@@ -52,18 +80,18 @@ export default function RegisterScreen({ navigation }) {
       />
 
       {error !== "" && <Text style={styles.error}>{error}</Text>}
+      {success !== "" && <Text style={styles.success}>{success}</Text>}
 
       <Button mode="contained" onPress={handleRegister} style={styles.button}>
         Registrarse
       </Button>
 
-      {/* 🔗 Enlace a login */}
       <Button
         mode="text"
         onPress={() => navigation.replace("Login")}
         style={styles.link}
       >
-        ¿Ya tienes una cuenta? Inicia sesión
+        ¿Ya tienes cuenta? Inicia sesión
       </Button>
     </View>
   );
@@ -73,7 +101,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20, backgroundColor: "#f5f5f5" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
   input: { marginBottom: 15 },
-  button: { marginTop: 10, backgroundColor: "#1976d2" },
+  button: { marginTop: 10 },
   link: { marginTop: 10 },
   error: { color: "red", marginBottom: 10, textAlign: "center" },
+  success: { color: "green", marginBottom: 10, textAlign: "center" },
 });

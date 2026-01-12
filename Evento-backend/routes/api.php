@@ -4,16 +4,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 // 🔐 Autenticación
-Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']); // opcional si tienes registro
+Route::post('/login', [AuthController::class, 'login']);
 
 // Rutas protegidas con Sanctum
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    Route::post('/logout', [AuthController::class, 'logout']);
+
 
     // 📋 Eventos CRUD
     Route::get('/eventos', [EventoController::class, 'index']);      // listar todos

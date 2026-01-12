@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text, Snackbar, Card } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
-import apiClient from "../services/apiClient";
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }) {
 
   const { login } = useAppContext();
 
@@ -25,16 +24,12 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      // ---- petición real al backend ----
       const { data } = await apiClient.post("/login", {
         email,
         password,
       });
 
-      // ---- guarda sesión global ----
       await login(data.user, data.token);
-
-      // No usamos navigation: App cambia sola gracias al contexto
 
     } catch (e) {
       setError("Correo o contraseña incorrectos");
@@ -45,6 +40,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+
       <Card style={styles.card}>
         <Card.Content>
 
@@ -84,6 +80,15 @@ export default function LoginScreen() {
             Entrar
           </Button>
 
+          {/* 👇👇 ESTE ES EL ENLACE QUE FALTABA */}
+          <Button
+            mode="text"
+            onPress={() => navigation.replace("Register")}
+            style={{ marginTop: 10 }}
+          >
+            ¿No tienes cuenta? Regístrate
+          </Button>
+
         </Card.Content>
       </Card>
 
@@ -94,6 +99,7 @@ export default function LoginScreen() {
       >
         {error}
       </Snackbar>
+
     </View>
   );
 }
