@@ -24,24 +24,7 @@ export default function HomeScreen({ navigation }) {
         🎉 ¡Transforma tu fiesta en un evento inolvidable, {user?.name || "Invitado"}! 🎊
       </Text>
 
-      {/* Acciones rápidas */}
-      <View style={styles.quickActions}>
-        <Button
-          mode="contained"
-          style={styles.mainButton}
-          onPress={() => navigation.navigate("CreateEvent")}
-        >
-          ➕ Crear Evento
-        </Button>
-
-        <Button
-          mode="outlined"
-          style={styles.secondaryButton}
-          onPress={() => navigation.navigate("Events")}
-        >
-          📋 Ver Mis Eventos
-        </Button>
-      </View>
+      
 
       {/* Tipos de eventos */}
       <Card style={styles.card}>
