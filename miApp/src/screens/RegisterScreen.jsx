@@ -22,8 +22,19 @@ export default function RegisterScreen({ navigation }) {
       setError("Completa todos los campos");
       return;
     }
-    login({ name, email });
-    navigation.replace("Dashboard");
+
+    try {
+      const response = await apiClient.post("/register", {
+        name,
+        email,
+        password,
+      });
+      setSuccess("Registro exitoso, iniciando sesión...");
+      await login(response.data.user, response.data.token);
+      navigation.replace("Dashboard");
+    } catch (e) {
+      setError(e?.response?.data?.message || "Error al registrar");
+    }
   };
 
   return (
