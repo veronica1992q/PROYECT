@@ -30,16 +30,26 @@ export default function HomeScreen({ navigation }) {
           style={styles.mainButton}
           onPress={() => navigation.navigate("CreateEvent")}
         >
-          Crear evento
+          ➕ Crear Evento
         </Button>
+
         <Button
           mode="outlined"
           style={styles.secondaryButton}
-          onPress={() => navigation.navigate("MyEvents")}
+          onPress={() => navigation.navigate("Events")}
         >
-          Mis eventos
+          📋 Ver Mis Eventos
         </Button>
       </View>
+
+      {/* Tipos de eventos */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.sectionTitle}>Celebraciones principales</Text>
+          <Text style={styles.item}>🎂 Cumpleaños</Text>
+          <Text style={styles.item}>🎓 Graduaciones</Text>
+        </Card.Content>
+      </Card>
 
       {/* Servicios */}
       <Card style={styles.card}>
@@ -58,6 +68,16 @@ export default function HomeScreen({ navigation }) {
           <Text>10% de descuento en decoración completa</Text>
         </Card.Content>
       </Card>
+
+      {/* Mensaje */}
+      <Text style={styles.message}>
+        ✨ ¡Haz que tu evento brille sin romper tu presupuesto! ✨
+      </Text>
+
+      {/* Nota */}
+      <Text style={styles.note}>
+        📞 Reserva con anticipación para asegurar disponibilidad
+      </Text>
     </ScrollView>
   );
 }
