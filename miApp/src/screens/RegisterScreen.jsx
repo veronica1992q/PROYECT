@@ -71,7 +71,12 @@ export default function RegisterScreen({ navigation }) {
       {error !== "" && <Text style={styles.error}>{error}</Text>}
       {success !== "" && <Text style={styles.success}>{success}</Text>}
 
-      <Button mode="contained" onPress={handleRegister} style={styles.button}>
+      <Button
+        mode="contained"
+        onPress={handleRegister}
+        style={[styles.button, {marginVertical: 20, width: '100%', alignSelf: 'center', paddingVertical: 8}]}
+        labelStyle={{fontSize: 18, fontWeight: 'bold'}}
+      >
         Registrarse
       </Button>
 
