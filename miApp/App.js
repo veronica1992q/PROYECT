@@ -8,6 +8,7 @@ import { AppProvider, useAppContext } from "./src/context/AppContext";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import DashboardTabs from "./src/navigation/DashboardTabs";
+import AdminPanelScreen from "./src/screens/AdminPanelScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,7 +29,10 @@ function RootNavigator() {
               <Stack.Screen name="Register" component={RegisterScreen} />
             </>
           ) : (
-            <Stack.Screen name="Dashboard" component={DashboardTabs} />
+            <>
+              <Stack.Screen name="Dashboard" component={DashboardTabs} />
+              <Stack.Screen name="AdminPanel" component={AdminPanelScreen} />
+            </>
           )}
 
         </Stack.Navigator>

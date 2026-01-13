@@ -75,6 +75,7 @@ export default function LoginScreen() {
             }
           />
 
+
           <Button
             mode="contained"
             onPress={handleLogin}
@@ -82,6 +83,19 @@ export default function LoginScreen() {
             style={styles.button}
           >
             Entrar
+          </Button>
+
+          <Button
+            mode="text"
+            style={{ marginTop: 8 }}
+            onPress={() => {
+              // Navegar a la pantalla de registro
+              if (typeof navigation !== 'undefined') {
+                navigation.navigate("Register");
+              }
+            }}
+          >
+            ¿No tienes cuenta? Regístrate
           </Button>
 
         </Card.Content>

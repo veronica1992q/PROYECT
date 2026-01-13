@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
+import apiClient from "../services/apiClient";
 
 export default function RegisterScreen({ navigation }) {
   const { login } = useAppContext();
@@ -10,14 +11,29 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     setError("");
     if (!name || !email || !password) {
       setError("Por favor completa todos los campos");
       return;
     }
-    login({ name, email });
-    navigation.replace("Dashboard");
+    try {
+      // Petición real al backend
+      const { data } = await apiClient.post("/register", {
+        name,
+        email,
+        password,
+      });
+      // Login automático tras registro
+      await login(data.user, data.token);
+      navigation.replace("Dashboard");
+    } catch (e) {
+      if (e.response && e.response.data && e.response.data.message) {
+        setError(e.response.data.message);
+      } else {
+        setError("Error al registrar. Intenta con otro correo.");
+      }
+    }
   };
 
   return (
