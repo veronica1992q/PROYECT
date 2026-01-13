@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, Button, Card, Avatar } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
+import apiClient from "../services/apiClient";
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAppContext();

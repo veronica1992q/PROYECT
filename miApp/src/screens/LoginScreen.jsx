@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text, Snackbar, Card } from "react-native-paper";
 import { useAppContext } from "../context/AppContext";
+import apiClient from "../services/apiClient";
 
 export default function LoginScreen({ navigation }) {
 
@@ -24,7 +25,7 @@ export default function LoginScreen({ navigation }) {
     try {
       setLoading(true);
 
-      const { data } = await apiClient.post("/login", {
+      const { data } = await apiClient.post("/api/login", {
         email,
         password,
       });
@@ -32,7 +33,18 @@ export default function LoginScreen({ navigation }) {
       await login(data.user, data.token);
 
     } catch (e) {
-      setError("Correo o contraseña incorrectos");
+      if (e?.response?.data) {
+        if (e.response.data.errors) {
+          const mensajes = Object.values(e.response.data.errors).flat().join("\n");
+          setError(mensajes);
+        } else if (e.response.data.message) {
+          setError(e.response.data.message);
+        } else {
+          setError(JSON.stringify(e.response.data));
+        }
+      } else {
+        setError("Error al iniciar sesión");
+      }
     } finally {
       setLoading(false);
     }
