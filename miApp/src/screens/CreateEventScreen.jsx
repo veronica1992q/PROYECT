@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { StyleSheet, ScrollView, View } from "react-native";
 import { TextInput, Button, Text, Card, Checkbox, Divider } from "react-native-paper";
-import axios from "axios";
-import { API_URL } from "../config";
+import apiClient from "../services/apiClient";
 
 // Componente reutilizable para selección automática
 const AutocompleteSelect = ({ label, value, onChange, suggestions }) => {
@@ -113,7 +112,7 @@ export default function CreateEventScreen({ navigation }) {
     }
 
     try {
-      await axios.post(`${API_URL}/api/eventos`, {
+      await apiClient.post("/api/eventos", {
         type: event.type === "cumpleaños" ? "Cumpleaños" : "Graduación",
         presetTitle: event.type === "cumpleaños" ? "🎂 Cumpleaños" : "🎓 Graduación",
         ...event,
