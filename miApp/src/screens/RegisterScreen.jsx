@@ -22,30 +22,8 @@ export default function RegisterScreen({ navigation }) {
       setError("Completa todos los campos");
       return;
     }
-
-    try {
-      const response = await apiClient.post("/register", {
-        name,
-        email,
-        password,
-      });
-
-      // Laravel devuelve user + token normalmente
-      const user = response.data.user;
-      const token = response.data.token;
-
-      // guardamos sesión
-      login({ user, token });
-
-      setSuccess("Usuario registrado correctamente");
-      navigation.replace("Dashboard");
-
-    } catch (err) {
-      console.log(err.response?.data);
-      setError(
-        err.response?.data?.message || "Error al registrar el usuario"
-      );
-    }
+    login({ name, email });
+    navigation.replace("Dashboard");
   };
 
   return (

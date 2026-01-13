@@ -71,6 +71,7 @@ export default function LoginScreen({ navigation }) {
             }
           />
 
+
           <Button
             mode="contained"
             onPress={handleLogin}
@@ -78,15 +79,6 @@ export default function LoginScreen({ navigation }) {
             style={styles.button}
           >
             Entrar
-          </Button>
-
-          {/* 👇👇 ESTE ES EL ENLACE QUE FALTABA */}
-          <Button
-            mode="text"
-            onPress={() => navigation.replace("Register")}
-            style={{ marginTop: 10 }}
-          >
-            ¿No tienes cuenta? Regístrate
           </Button>
 
         </Card.Content>
