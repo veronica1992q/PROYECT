@@ -33,7 +33,19 @@ export default function RegisterScreen({ navigation }) {
       await login(response.data.user, response.data.token);
       navigation.replace("Dashboard");
     } catch (e) {
-      setError(e?.response?.data?.message || "Error al registrar");
+      if (e?.response?.data) {
+        // Si hay errores de validación, los mostramos todos
+        if (e.response.data.errors) {
+          const mensajes = Object.values(e.response.data.errors).flat().join("\n");
+          setError(mensajes);
+        } else if (e.response.data.message) {
+          setError(e.response.data.message);
+        } else {
+          setError(JSON.stringify(e.response.data));
+        }
+      } else {
+        setError("Error al registrar");
+      }
     }
   };
 
