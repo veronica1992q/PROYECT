@@ -81,6 +81,15 @@ export default function LoginScreen({ navigation }) {
             Entrar
           </Button>
 
+          <Button
+            mode="contained"
+            style={{ marginTop: 18, backgroundColor: '#43a047', width: '100%', alignSelf: 'center', paddingVertical: 8 }}
+            labelStyle={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}
+            onPress={() => navigation.replace("Register")}
+          >
+            ¿No tienes cuenta? Regístrate
+          </Button>
+
         </Card.Content>
       </Card>
 

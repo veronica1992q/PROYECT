@@ -40,6 +40,15 @@ export default function HomeScreen({ navigation }) {
         >
           📋 Ver Mis Eventos
         </Button>
+
+        <Button
+          mode="contained"
+          style={{marginTop: 16, backgroundColor: '#43a047', width: '100%', alignSelf: 'center', paddingVertical: 8}}
+          labelStyle={{fontSize: 16, fontWeight: 'bold'}}
+          onPress={() => navigation.navigate("Register")}
+        >
+          📝 Registrarse
+        </Button>
       </View>
 
       {/* Tipos de eventos */}
@@ -80,8 +89,14 @@ export default function HomeScreen({ navigation }) {
         📞 Reserva con anticipación para asegurar disponibilidad
       </Text>
 
-      {/* Cerrar sesión */}
-      <Button mode="text" textColor="red">
+      {/* Botón Registrarse al final */}
+      <Button
+        mode="contained"
+        style={{marginTop: 30, backgroundColor: '#43a047', width: '100%', alignSelf: 'center', paddingVertical: 10}}
+        labelStyle={{fontSize: 18, fontWeight: 'bold'}}
+        onPress={() => navigation.navigate("Register")}
+      >
+        📝 Registrarse
       </Button>
     </ScrollView>
   );

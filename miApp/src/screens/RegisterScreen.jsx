@@ -24,7 +24,7 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const response = await apiClient.post("/register", {
+      const response = await apiClient.post("/api/register", {
         name,
         email,
         password,

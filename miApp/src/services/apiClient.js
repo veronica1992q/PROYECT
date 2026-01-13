@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config";
 
 const apiClient = axios.create({
-  baseURL: API_URL + "/api", // Si API_URL ya incluye /api, solo usa API_URL
+  baseURL: API_URL,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
