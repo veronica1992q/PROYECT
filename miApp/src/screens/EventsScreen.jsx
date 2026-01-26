@@ -10,7 +10,7 @@ export default function EventsScreen({ navigation }) {
   const fetchEvents = async () => {
     try {
       const response = await apiClient.get("/eventos");
-      setEvents(response.data);
+      setEvents(response.data); // tu API devuelve un array de eventos
     } catch (error) {
       console.error(error.response?.data || error.message);
     }
@@ -49,15 +49,19 @@ export default function EventsScreen({ navigation }) {
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <Card.Content>
-        <Text style={styles.title}>{item.anfitrion}</Text>
-        <Text>📅 Fecha: {item.fecha}</Text>
-        <Text>🏛 Lugar: {item.lugar}</Text>
-        <Text>👥 Invitados: {item.invitados}</Text>
-        <Text>💰 Presupuesto: ${item.presupuesto}</Text>
+        <Text style={styles.title}>{item.presetTitle}</Text>
+        <Text>📅 Fecha: {item.date}</Text>
+        <Text>👤 Organizador: {item.organizer}</Text>
+        <Text>🏛 Salón: {item.hall}</Text>
+        <Text>👥 Invitados: {item.guests}</Text>
+        <Text>💰 Total: ${item.totalGeneral}</Text>
         {item.extras && <Text>✨ Extras: {item.extras}</Text>}
       </Card.Content>
       <Card.Actions>
-        <Button onPress={() => deleteEvent(item.id)} color="red">
+        <Button onPress={() => navigation.navigate("EditEvent", { event: item })}>
+          ✏️ Editar
+        </Button>
+        <Button onPress={() => deleteEvent(item.id)} textColor="red">
           🗑 Eliminar
         </Button>
       </Card.Actions>

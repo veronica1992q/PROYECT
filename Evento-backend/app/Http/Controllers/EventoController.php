@@ -2,28 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Evento;
+use Illuminate\Http\Request;
 
 class EventoController extends Controller
 {
-    // Crear nuevo evento
+    public function index()
+    {
+        return Evento::orderBy('date')->get();
+    }
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'type' => 'required|string',
-            'presetTitle' => 'required|string',
-            'date' => 'required|date',
-            'organizer' => 'required|string',
-            'hall' => 'required|string',
-            'guests' => 'required|integer',
-            'extras' => 'nullable|string',
-            'services' => 'nullable|array',
-            'totalGeneral' => 'required|numeric',
-            'user_email' => 'required|email',
-        ]);
-
-        $evento = Evento::create($validated);
+        $evento = Evento::create($request->all());
 
         return response()->json([
             'message' => 'Evento creado exitosamente',
@@ -31,33 +22,14 @@ class EventoController extends Controller
         ], 201);
     }
 
-    // Listar todos los eventos
-    public function index()
-    {
-        return Evento::all();
-    }
-
-    // Ver un evento específico
     public function show($id)
     {
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            return response()->json(['message' => 'Evento no encontrado'], 404);
-        }
-
-        return $evento;
+        return Evento::findOrFail($id);
     }
 
-    // Actualizar evento
     public function update(Request $request, $id)
     {
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            return response()->json(['message' => 'Evento no encontrado'], 404);
-        }
-
+        $evento = Evento::findOrFail($id);
         $evento->update($request->all());
 
         return response()->json([
@@ -66,17 +38,12 @@ class EventoController extends Controller
         ]);
     }
 
-    // Eliminar evento
     public function destroy($id)
     {
-        $evento = Evento::find($id);
+        Evento::destroy($id);
 
-        if (!$evento) {
-            return response()->json(['message' => 'Evento no encontrado'], 404);
-        }
-
-        $evento->delete();
-
-        return response()->json(['message' => 'Evento eliminado']);
+        return response()->json([
+            'message' => 'Evento eliminado'
+        ]);
     }
 }
