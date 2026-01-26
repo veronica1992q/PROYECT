@@ -1,10 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EventoController;
+use App\Http\Controllers\AuthController;
 
-Route::get('/eventos', [EventoController::class, 'index']);
-Route::get('/eventos/{id}', [EventoController::class, 'show']);
-Route::post('/eventos', [EventoController::class, 'store']);
-Route::put('/eventos/{id}', [EventoController::class, 'update']);
-Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
+});

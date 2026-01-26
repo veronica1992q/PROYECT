@@ -5,7 +5,6 @@ import { useAppContext } from "../context/AppContext";
 import apiClient from "../services/apiClient";
 
 export default function LoginScreen({ navigation }) {
-
   const { login } = useAppContext();
 
   const [email, setEmail] = useState("");
@@ -25,7 +24,8 @@ export default function LoginScreen({ navigation }) {
     try {
       setLoading(true);
 
-      const { data } = await apiClient.post("/api/login", {
+      // 🔥 AQUÍ EL CAMBIO IMPORTANTE → SIN /api
+      const { data } = await apiClient.post("/login", {
         email,
         password,
       });
@@ -52,10 +52,8 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-
       <Card style={styles.card}>
         <Card.Content>
-
           <Text style={styles.title}>🔐 Iniciar sesión</Text>
 
           <TextInput
@@ -83,7 +81,6 @@ export default function LoginScreen({ navigation }) {
             }
           />
 
-
           <Button
             mode="contained"
             onPress={handleLogin}
@@ -95,24 +92,17 @@ export default function LoginScreen({ navigation }) {
 
           <Button
             mode="contained"
-            style={{ marginTop: 18, backgroundColor: '#43a047', width: '100%', alignSelf: 'center', paddingVertical: 8 }}
-            labelStyle={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}
+            style={{ marginTop: 18, backgroundColor: "#43a047" }}
             onPress={() => navigation.replace("Register")}
           >
             ¿No tienes cuenta? Regístrate
           </Button>
-
         </Card.Content>
       </Card>
 
-      <Snackbar
-        visible={!!error}
-        onDismiss={() => setError("")}
-        duration={3000}
-      >
+      <Snackbar visible={!!error} onDismiss={() => setError("")} duration={3000}>
         {error}
       </Snackbar>
-
     </View>
   );
 }

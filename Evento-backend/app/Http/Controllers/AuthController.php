@@ -2,87 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    // 👉 REGISTRO
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6'
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6',
         ]);
 
-        // Crear usuario
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        // Crear token Sanctum
-        $token = $user->createToken('mobile-token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Usuario registrado correctamente',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
+            'user' => $user,
             'token' => $token,
         ], 201);
     }
 
-    // 👉 LOGIN
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string',
+            'password' => 'required',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        // usuario no existe
-        if (!$user) {
-            return response()->json([
-                'message' => 'Correo o contraseña incorrectos'
-            ], 401);
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['Credenciales incorrectas'],
+            ]);
         }
 
-        // contraseña incorrecta
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Correo o contraseña incorrectos'
-            ], 401);
-        }
-
-        // Token Sanctum
-        $token = $user->createToken('mobile-token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
+            'user' => $user,
             'token' => $token,
         ]);
     }
 
-    // 👉 LOGOUT
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()->delete();
 
         return response()->json([
-            'message' => 'Sesión cerrada correctamente',
+            'message' => 'Sesión cerrada correctamente'
         ]);
+    }
+
+    public function user(Request $request)
+    {
+        return response()->json($request->user());
     }
 }
