@@ -21,13 +21,11 @@ class Evento extends Model
         'extras',
         'services',
         'totalGeneral',
-        'user_email',
+        'user_email'
     ];
 
     protected $casts = [
         'services' => 'array',
-        'date' => 'date',
-        'guests' => 'integer',
-        'totalGeneral' => 'integer',
+        'date' => 'date'
     ];
 }
