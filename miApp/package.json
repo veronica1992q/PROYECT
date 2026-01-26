@@ -12,10 +12,11 @@
   "devDependencies": {
     "@babel/preset-flow": "^7.27.1",
     "@babel/preset-typescript": "^7.28.5",
-    "babel-preset-expo": "~54.0.9"
+    "babel-preset-expo": "~54.0.10"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/drawer": "^7.5.0",
     "@react-navigation/native": "^7.1.8",
@@ -26,10 +27,10 @@
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "expo": "~54.0.31",
+    "expo": "~54.0.32",
     "expo-constants": "~18.0.13",
     "expo-linking": "~8.0.11",
-    "expo-router": "~6.0.21",
+    "expo-router": "~6.0.22",
     "expo-status-bar": "~3.0.9",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
@@ -38,6 +39,7 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-dotenv": "^3.4.11",
+    "react-native-dropdown-select-list": "^2.0.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-get-random-values": "~1.11.0",
     "react-native-paper": "^5.14.5",

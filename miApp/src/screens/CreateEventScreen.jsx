@@ -1,54 +1,26 @@
 import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext";
-import { StyleSheet, ScrollView, View } from "react-native";
+import { StyleSheet, ScrollView, View, Platform } from "react-native";
 import { TextInput, Button, Text, Card, Checkbox, Divider } from "react-native-paper";
+import { SelectList } from "react-native-dropdown-select-list";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import apiClient from "../services/apiClient";
-
-// Componente reutilizable para selección automática
-const AutocompleteSelect = ({ label, value, onChange, suggestions }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <View style={{ marginBottom: 12 }}>
-      <Button mode="outlined" onPress={() => setOpen(!open)} style={styles.toggleButton}>
-        {value ? `${label}: ${value}` : `Seleccionar ${label}`}
-      </Button>
-      {open && (
-        <View style={styles.suggestionBox}>
-          {suggestions.map((s, i) => (
-            <Button
-              key={i}
-              mode={value === s ? "contained" : "outlined"}
-              onPress={() => {
-                onChange(s);
-                setOpen(false);
-              }}
-              style={styles.suggestionItem}
-            >
-              {s}
-            </Button>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-};
 
 export default function CreateEventScreen({ navigation }) {
   const { user } = useAppContext();
 
-  // ================= STATE ÚNICO =================
   const [event, setEvent] = useState({
-    type: "cumpleaños", // alterna entre "cumpleaños" y "graduacion"
+    type: "cumpleaños",
     date: "",
     organizer: "",
     hall: "",
     guests: 0,
-    budget: 0,
     extras: "",
     services: [],
   });
 
-  // ================= DATA =================
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const organizers = {
     cumpleaños: ["Laura Mendoza", "Pedro Castillo", "María López", "José Ramírez", "Camila Torres"],
     graduacion: ["Andrés Villalba", "Paola Sánchez", "Ricardo Morales", "Daniela Pérez", "Felipe Herrera"],
@@ -74,15 +46,12 @@ export default function CreateEventScreen({ navigation }) {
     ],
   };
 
-  // ================= HELPERS =================
   const formatCurrency = (n) =>
     Number(n || 0).toLocaleString("es-EC", {
       style: "currency",
       currency: "USD",
       maximumFractionDigits: 0,
     });
-
-  const isValidDate = (str) => /^\d{4}-\d{2}-\d{2}$/.test(str);
 
   const toggleService = (serviceName) => {
     const prev = event.services || [];
@@ -97,17 +66,11 @@ export default function CreateEventScreen({ navigation }) {
       .filter((item) => servicesNames.includes(item.name))
       .reduce((sum, s) => sum + s.price, 0);
 
-  // ================= CREATE EVENT =================
   const createEvent = async () => {
-    const totalServices = calcTotal(event.services, event.type);
-    const totalGeneral = totalServices + Number(event.budget || 0);
+    const totalGeneral = calcTotal(event.services, event.type);
 
     if (!event.date || !event.organizer || !event.hall) {
       alert("⚠️ Completa fecha, organizador y salón");
-      return;
-    }
-    if (!isValidDate(event.date)) {
-      alert("📅 Usa el formato de fecha YYYY-MM-DD (ej. 2026-01-20)");
       return;
     }
 
@@ -117,7 +80,6 @@ export default function CreateEventScreen({ navigation }) {
         presetTitle: event.type === "cumpleaños" ? "🎂 Cumpleaños" : "🎓 Graduación",
         ...event,
         services: event.services,
-        totalServices,
         totalGeneral,
         user_email: user?.email || "",
       });
@@ -129,7 +91,9 @@ export default function CreateEventScreen({ navigation }) {
     }
   };
 
-  // ================= RENDER =================
+  const organizerOptions = organizers[event.type].map((name) => ({ key: name, value: name }));
+  const hallOptions = halls[event.type].map((name) => ({ key: name, value: name }));
+
   return (
     <ScrollView style={styles.container}>
       <Card style={styles.heroCard}>
@@ -139,7 +103,7 @@ export default function CreateEventScreen({ navigation }) {
         </Card.Content>
       </Card>
 
-      {/* Selector de tipo de evento */}
+      {/* Tipo de evento */}
       <View style={styles.selectorRow}>
         <Button
           mode={event.type === "cumpleaños" ? "contained" : "outlined"}
@@ -169,48 +133,76 @@ export default function CreateEventScreen({ navigation }) {
         </Card>
       ))}
 
-      {/* Totales */}
+      {/* Total del evento */}
       <Card style={styles.totalCard}>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Subtotal servicios</Text>
-          <Text style={styles.totalValue}>{formatCurrency(calcTotal(event.services, event.type))}</Text>
-        </View>
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total del evento</Text>
           <Text style={styles.totalFinal}>
-            {formatCurrency(calcTotal(event.services, event.type) + Number(event.budget || 0))}
+            {formatCurrency(calcTotal(event.services, event.type))}
           </Text>
         </View>
       </Card>
 
       <Divider style={{ marginVertical: 12 }} />
 
-      {/* Detalles */}
-      <TextInput
-        label="📅 Fecha (YYYY-MM-DD)"
-        value={event.date}
-        onChangeText={(v) => setEvent({ ...event, date: v })}
-        style={styles.input}
-        mode="outlined"
-        placeholder="Ej. 2026-01-20"
+      {/* Fecha con calendario */}
+      {Platform.OS === "web" ? (
+        <input
+          type="date"
+          value={event.date}
+          onChange={(e) => setEvent({ ...event, date: e.target.value })}
+          style={{ marginBottom: 12, padding: 10, borderRadius: 8, borderColor: "#e0e0e0" }}
+        />
+      ) : (
+        <View style={{ marginBottom: 12 }}>
+          <Button
+            icon="calendar"
+            mode="outlined"
+            onPress={() => setShowDatePicker(true)}
+            style={styles.toggleButton}
+          >
+            {event.date ? `📅 Fecha: ${event.date}` : "Seleccionar Fecha"}
+          </Button>
+          {showDatePicker && (
+            <DateTimePicker
+              value={event.date ? new Date(event.date) : new Date()}
+              mode="date"
+              display="default"
+              onChange={(e, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) {
+                  const yyyy = selectedDate.getFullYear();
+                  const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                  const dd = String(selectedDate.getDate()).padStart(2, "0");
+                  setEvent({ ...event, date: `${yyyy}-${mm}-${dd}` });
+                }
+              }}
+            />
+          )}
+        </View>
+      )}
+
+      {/* Selector de organizador */}
+      <SelectList
+        setSelected={(val) => setEvent({ ...event, organizer: val })}
+        data={organizerOptions}
+        save="value"
+        placeholder="Seleccionar Organizador"
+        boxStyles={styles.input}
+        dropdownStyles={styles.suggestionBox}
       />
 
-      {/* Selector dinámico de organizador */}
-      <AutocompleteSelect
-        label="Organizador"
-        value={event.organizer}
-        onChange={(v) => setEvent({ ...event, organizer: v })}
-        suggestions={organizers[event.type]}
+      {/* Selector de salón */}
+      <SelectList
+        setSelected={(val) => setEvent({ ...event, hall: val })}
+        data={hallOptions}
+        save="value"
+        placeholder="Seleccionar Salón"
+        boxStyles={styles.input}
+        dropdownStyles={styles.suggestionBox}
       />
 
-      {/* Selector dinámico de salón */}
-      <AutocompleteSelect
-        label="Salón"
-        value={event.hall}
-        onChange={(v) => setEvent({ ...event, hall: v })}
-        suggestions={halls[event.type]}
-      />
-
+      {/* Invitados */}
       <TextInput
         label="👥 Invitados (número)"
         value={String(event.guests || "")}
@@ -224,19 +216,7 @@ export default function CreateEventScreen({ navigation }) {
         placeholder="Ej. 120"
       />
 
-      <TextInput
-        label="💰 Presupuesto (USD)"
-        value={String(event.budget || "")}
-        onChangeText={(v) => {
-          const n = parseInt(v.replace(/[^0-9]/g, ""), 10) || 0;
-          setEvent({ ...event, budget: n });
-        }}
-        style={styles.input}
-        mode="outlined"
-        keyboardType="numeric"
-        placeholder="Ej. 1000"
-      />
-
+      {/* Extras */}
       <TextInput
         label="✨ Extras"
         multiline
@@ -253,8 +233,6 @@ export default function CreateEventScreen({ navigation }) {
     </ScrollView>
   );
 }
-
-
 
 // ================= STYLES =================
 const styles = StyleSheet.create({

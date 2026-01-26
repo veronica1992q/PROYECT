@@ -10,15 +10,22 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "platforms": ["android", "web"],
-    "assetBundlePatterns": ["**/*"],
+    "platforms": [
+      "android",
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "web": {
       "favicon": "./assets/favicon.png",
       "output": "single"
     },
     "android": {
       "package": "com.anonymous.miApp"
-    }
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
   }
 }
-

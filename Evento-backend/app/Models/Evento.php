@@ -9,26 +9,24 @@ class Evento extends Model
 {
     use HasFactory;
 
-    // Nombre de la tabla (opcional si coincide con plural del modelo)
+    // Nombre de la tabla (opcional si sigue la convención plural)
     protected $table = 'eventos';
 
     // Campos que se pueden asignar masivamente
     protected $fillable = [
         'type',
         'presetTitle',
-        'fecha',
+        'date',
         'organizer',
         'hall',
         'guests',
-        'budget',
         'extras',
         'services',
-        'totalServices',
         'totalGeneral',
         'user_email',
     ];
 
-    // Si 'services' es un array/JSON, lo convertimos automáticamente
+    // Cast para que "services" se guarde y recupere como array JSON
     protected $casts = [
         'services' => 'array',
     ];

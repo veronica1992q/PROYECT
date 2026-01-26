@@ -7,36 +7,37 @@ use App\Models\Evento;
 
 class EventoController extends Controller
 {
-    // 📋 Listar todos los eventos
-    public function index()
-    {
-        return response()->json(Evento::all(), 200);
-    }
-
-    // ➕ Crear un nuevo evento
+    // Crear nuevo evento
     public function store(Request $request)
     {
         $validated = $request->validate([
             'type' => 'required|string',
-            'presetTitle' => 'nullable|string',
-            'fecha' => 'required|date',
+            'presetTitle' => 'required|string',
+            'date' => 'required|date',
             'organizer' => 'required|string',
             'hall' => 'required|string',
             'guests' => 'required|integer',
-            'budget' => 'required|integer',
             'extras' => 'nullable|string',
             'services' => 'nullable|array',
-            'totalServices' => 'nullable|integer',
-            'totalGeneral' => 'nullable|integer',
-            'user_email' => 'nullable|string|email',
+            'totalGeneral' => 'required|numeric',
+            'user_email' => 'required|email',
         ]);
 
         $evento = Evento::create($validated);
 
-        return response()->json($evento, 201);
+        return response()->json([
+            'message' => 'Evento creado exitosamente',
+            'evento' => $evento
+        ], 201);
     }
 
-    // 🔎 Mostrar un evento específico
+    // Listar todos los eventos
+    public function index()
+    {
+        return Evento::all();
+    }
+
+    // Ver un evento específico
     public function show($id)
     {
         $evento = Evento::find($id);
@@ -45,10 +46,10 @@ class EventoController extends Controller
             return response()->json(['message' => 'Evento no encontrado'], 404);
         }
 
-        return response()->json($evento, 200);
+        return $evento;
     }
 
-    // ✏️ Actualizar un evento
+    // Actualizar evento
     public function update(Request $request, $id)
     {
         $evento = Evento::find($id);
@@ -57,27 +58,15 @@ class EventoController extends Controller
             return response()->json(['message' => 'Evento no encontrado'], 404);
         }
 
-        $validated = $request->validate([
-            'type' => 'nullable|string',
-            'presetTitle' => 'nullable|string',
-            'fecha' => 'nullable|date',
-            'organizer' => 'nullable|string',
-            'hall' => 'nullable|string',
-            'guests' => 'nullable|integer',
-            'budget' => 'nullable|integer',
-            'extras' => 'nullable|string',
-            'services' => 'nullable|array',
-            'totalServices' => 'nullable|integer',
-            'totalGeneral' => 'nullable|integer',
-            'user_email' => 'nullable|string|email',
+        $evento->update($request->all());
+
+        return response()->json([
+            'message' => 'Evento actualizado',
+            'evento' => $evento
         ]);
-
-        $evento->update($validated);
-
-        return response()->json($evento, 200);
     }
 
-    // 🗑 Eliminar un evento
+    // Eliminar evento
     public function destroy($id)
     {
         $evento = Evento::find($id);
@@ -88,6 +77,6 @@ class EventoController extends Controller
 
         $evento->delete();
 
-        return response()->json(['message' => 'Evento eliminado con éxito'], 200);
+        return response()->json(['message' => 'Evento eliminado']);
     }
 }
