@@ -13,6 +13,7 @@ export default function RegisterScreen({ navigation }) {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     setError("");
@@ -24,17 +25,20 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
+      setLoading(true);
+
       const response = await apiClient.post("/api/register", {
         name,
         email,
         password,
       });
-      setSuccess("Registro exitoso, iniciando sesión...");
+
+      setSuccess("Registro exitoso 🎉");
       await login(response.data.user, response.data.token);
       navigation.replace("Dashboard");
+
     } catch (e) {
       if (e?.response?.data) {
-        // Si hay errores de validación, los mostramos todos
         if (e.response.data.errors) {
           const mensajes = Object.values(e.response.data.errors).flat().join("\n");
           setError(mensajes);
@@ -44,8 +48,10 @@ export default function RegisterScreen({ navigation }) {
           setError(JSON.stringify(e.response.data));
         }
       } else {
-        setError("Error al registrar");
+        setError("No se pudo conectar con el servidor");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,14 +86,11 @@ export default function RegisterScreen({ navigation }) {
         secureTextEntry
       />
 
-      {error !== "" && <Text style={styles.error}>{error}</Text>}
-      {success !== "" && <Text style={styles.success}>{success}</Text>}
-
       <Button
         mode="contained"
         onPress={handleRegister}
-        style={[styles.button, {marginVertical: 20, width: '100%', alignSelf: 'center', paddingVertical: 8}]}
-        labelStyle={{fontSize: 18, fontWeight: 'bold'}}
+        loading={loading}
+        style={styles.button}
       >
         Registrarse
       </Button>
@@ -99,6 +102,14 @@ export default function RegisterScreen({ navigation }) {
       >
         ¿Ya tienes cuenta? Inicia sesión
       </Button>
+
+      <Snackbar visible={!!error} onDismiss={() => setError("")}>
+        {error}
+      </Snackbar>
+
+      <Snackbar visible={!!success} onDismiss={() => setSuccess("")}>
+        {success}
+      </Snackbar>
     </View>
   );
 }
@@ -109,6 +120,4 @@ const styles = StyleSheet.create({
   input: { marginBottom: 15 },
   button: { marginTop: 10 },
   link: { marginTop: 10 },
-  error: { color: "red", marginBottom: 10, textAlign: "center" },
-  success: { color: "green", marginBottom: 10, textAlign: "center" },
 });

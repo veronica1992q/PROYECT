@@ -24,7 +24,7 @@ export default function LoginScreen({ navigation }) {
     try {
       setLoading(true);
 
-      // 🔥 AQUÍ EL CAMBIO IMPORTANTE → SIN /api
+      // ✅ SOLO UNA PETICIÓN
       const { data } = await apiClient.post("/login", {
         email,
         password,
@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation }) {
           setError(JSON.stringify(e.response.data));
         }
       } else {
-        setError("Error al iniciar sesión");
+        setError("No se pudo conectar con el servidor");
       }
     } finally {
       setLoading(false);
