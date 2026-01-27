@@ -1,41 +1,35 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Text, Snackbar } from "react-native-paper";
-import { useAppContext } from "../context/AppContext";
+import { TextInput, Button, Text, Snackbar, Card } from "react-native-paper";
 import apiClient from "../services/apiClient";
 
 export default function RegisterScreen({ navigation }) {
-  const { login } = useAppContext();
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleRegister = async () => {
     setError("");
-    setSuccess("");
 
     if (!name || !email || !password) {
-      setError("Completa todos los campos");
+      setError("Por favor completa todos los campos");
       return;
     }
 
     try {
       setLoading(true);
 
-      const response = await apiClient.post("/api/register", {
+      // ✅ CORREGIDO → usar /api/register porque está en routes/api.php
+      await apiClient.post("/api/register", {
         name,
         email,
         password,
       });
 
-      setSuccess("Registro exitoso 🎉");
-      await login(response.data.user, response.data.token);
-      navigation.replace("Dashboard");
+      // Después de registrarse, ir al login
+      navigation.replace("Login");
 
     } catch (e) {
       if (e?.response?.data) {
@@ -57,67 +51,86 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📝 Crear Cuenta</Text>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.title}>📝 Crear Cuenta</Text>
 
-      <TextInput
-        label="Nombre"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-        mode="outlined"
-      />
+          <TextInput
+            label="Nombre"
+            value={name}
+            onChangeText={setName}
+            mode="outlined"
+            style={styles.input}
+          />
 
-      <TextInput
-        label="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        mode="outlined"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+          <TextInput
+            label="Correo electrónico"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-      <TextInput
-        label="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        mode="outlined"
-        secureTextEntry
-      />
+          <TextInput
+            label="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            mode="outlined"
+            style={styles.input}
+            secureTextEntry
+          />
 
-      <Button
-        mode="contained"
-        onPress={handleRegister}
-        loading={loading}
-        style={styles.button}
-      >
-        Registrarse
-      </Button>
+          <Button
+            mode="contained"
+            onPress={handleRegister}
+            loading={loading}
+            style={styles.button}
+          >
+            Registrarse
+          </Button>
 
-      <Button
-        mode="text"
-        onPress={() => navigation.replace("Login")}
-        style={styles.link}
-      >
-        ¿Ya tienes cuenta? Inicia sesión
-      </Button>
+          <Button
+            mode="contained"
+            style={{ marginTop: 18, backgroundColor: "#1976d2" }}
+            onPress={() => navigation.replace("Login")}
+          >
+            ¿Ya tienes cuenta? Inicia sesión
+          </Button>
+        </Card.Content>
+      </Card>
 
-      <Snackbar visible={!!error} onDismiss={() => setError("")}>
+      <Snackbar visible={!!error} onDismiss={() => setError("")} duration={3000}>
         {error}
-      </Snackbar>
-
-      <Snackbar visible={!!success} onDismiss={() => setSuccess("")}>
-        {success}
       </Snackbar>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 20, backgroundColor: "#f5f5f5" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
-  input: { marginBottom: 15 },
-  button: { marginTop: 10 },
-  link: { marginTop: 10 },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 22,
+    backgroundColor: "#f5f6fa",
+  },
+  card: {
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    elevation: 5,
+    borderRadius: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  input: {
+    marginBottom: 14,
+  },
+  button: {
+    marginTop: 8,
+  },
 });

@@ -24,12 +24,13 @@ export default function LoginScreen({ navigation }) {
     try {
       setLoading(true);
 
-      // ✅ SOLO UNA PETICIÓN
-      const { data } = await apiClient.post("/login", {
+      // ✅ CORREGIDO → usar /api/login porque está en routes/api.php
+      const { data } = await apiClient.post("/api/login", {
         email,
         password,
       });
 
+      // Guardar usuario y token en el contexto
       await login(data.user, data.token);
 
     } catch (e) {
