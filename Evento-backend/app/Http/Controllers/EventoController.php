@@ -7,70 +7,33 @@ use App\Models\Evento;
 
 class EventoController extends Controller
 {
-    // Obtener todos
-    public function index()
-    {
-        return response()->json(Evento::all(), 200);
-    }
-
-    // Obtener uno
-    public function show($id)
-    {
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            return response()->json(['message' => 'Evento no encontrado'], 404);
-        }
-
-        return response()->json($evento, 200);
-    }
-
-    // Crear
+    // ✅ Requiere autenticación
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'type' => 'required|string',
-            'presetTitle' => 'required|string',
-            'date' => 'required|date',
-            'organizer' => 'required|string',
-            'hall' => 'required|string',
-            'guests' => 'required|integer',
-            'extras' => 'nullable|string',
-            'services' => 'nullable|array',
-            'totalGeneral' => 'required|integer',
-            'user_email' => 'required|email'
+        // Validar los datos
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'fecha' => 'required|date',
+            'lugar' => 'required|string|max:255',
+            'invitados' => 'required|integer|min:1',
+            'extras' => 'nullable|array',
+            'total' => 'required|numeric|min:0',
         ]);
 
-        $evento = Evento::create($validated);
+        // Crear el evento
+        $evento = Evento::create([
+            'user_id' => $request->user()->id, // ✅ vincular al usuario autenticado
+            'nombre' => $request->nombre,
+            'fecha' => $request->fecha,
+            'lugar' => $request->lugar,
+            'invitados' => $request->invitados,
+            'extras' => json_encode($request->extras), // ✅ guardar como JSON si es array
+            'total' => $request->total,
+        ]);
 
-        return response()->json($evento, 201);
-    }
-
-    // Actualizar
-    public function update(Request $request, $id)
-    {
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            return response()->json(['message' => 'Evento no encontrado'], 404);
-        }
-
-        $evento->update($request->all());
-
-        return response()->json($evento, 200);
-    }
-
-    // Eliminar
-    public function destroy($id)
-    {
-        $evento = Evento::find($id);
-
-        if (!$evento) {
-            return response()->json(['message' => 'Evento no encontrado'], 404);
-        }
-
-        $evento->delete();
-
-        return response()->json(['message' => 'Evento eliminado correctamente'], 200);
+        return response()->json([
+            'message' => 'Evento creado correctamente',
+            'evento' => $evento,
+        ], 201);
     }
 }
